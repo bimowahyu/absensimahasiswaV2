@@ -1,0 +1,72 @@
+.container {
+    padding: 20px;
+  }
+  
+  .form {
+    margin-bottom: 20px;
+  }
+  
+  .warning {
+    color: red;
+    margin-top: 10px;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .data-table th, .data-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .data-table th {
+    background-color: #f2f2f2;
+    text-align: left;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  
+  .btn-primary {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+  }
+  
+  .btn-export {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+  }
+  
+  /* Responsif untuk layar kecil */
+  @media (max-width: 600px) {
+    .data-table th, .data-table td {
+      display: block;
+      width: 100%;
+    }
+    
+    .data-table th {
+      background-color: transparent;
+      color: black;
+      text-align: right;
+    }
+  
+    .data-table td::before {
+      content: attr(data-label);
+      font-weight: bold;
+      text-align: left;
+      display: block;
+    }
+  }
+  

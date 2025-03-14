@@ -1,0 +1,8 @@
+body {
+    padding-top: 60px; /* Sesuaikan nilai ini dengan tinggi navbar Anda */
+  }
+  
+  .navbar.is-fixed-top {
+    z-index: 1000; /* Pastikan navbar berada di atas elemen lain */
+  }
+  

@@ -1,0 +1,14 @@
+.table-container {
+    overflow-x: auto; /* Aktifkan scroll horizontal */
+  }
+  
+  @media (max-width: 768px) {
+    .table-container {
+      margin-bottom: 1rem; /* Menambahkan ruang bawah untuk konten setelah tabel */
+    }
+  
+    table {
+      min-width: 600px; /* Tentukan lebar minimum tabel agar tidak terlalu sempit di layar kecil */
+    }
+  }
+  

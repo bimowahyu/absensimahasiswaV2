@@ -1,0 +1,149 @@
+/* Aturan dasar untuk tabel */
+table {
+    width: 100%; /* Tabel akan menyesuaikan lebar kontainernya */
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #495057;
+}
+
+table th, table td {
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    text-align: center;
+}
+
+table th {
+    background-color: #e9ecef;
+    font-weight: 600;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+table tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+/* Kontainer dengan scroll horizontal */
+.scrollable-container {
+    overflow-x: auto;
+    overflow-y: auto; /* Tambahkan ini */
+    white-space: nowrap;
+    width: 100%;
+    max-height: 80vh; /* Batasi tinggi maksimal, contoh: 80% dari tinggi viewport */
+    display: block;
+  
+}
+
+/* Pastikan tabel meluas sesuai konten */
+.scrollable-table {
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Scrollbar styling */
+.scrollable-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+    background-color: #ced4da;
+    border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+    background-color: #adb5bd;
+}
+@media (max-width: 768px) {
+    .scrollable-container {
+        overflow-x: auto;
+        overflow-y: auto; /* Tambahkan ini */
+        max-height: 100vh; /* Atur tinggi maksimal untuk perangkat kecil */
+    }
+
+    table {
+        font-size: 12px; /* Sesuaikan ukuran font jika diperlukan */
+    }
+
+    table th, table td {
+        padding: 8px; /* Sesuaikan padding jika diperlukan */
+    }
+}
+
+/* Pengaturan tambahan untuk konten halaman */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #495057;
+}
+
+input[type="month"] {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 16px;
+    color: #495057;
+    margin-right: 10px;
+}
+
+button[type="button"] {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button[type="button"]:hover {
+    background-color: #0056b3;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Pengaturan tombol scroll (jika diperlukan) */
+.scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    border: none;
+    border-radius: 20%;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.scroll-button:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.scroll-button.left {
+    left: 0;
+}
+
+.scroll-button.right {
+    right: 0;
+}

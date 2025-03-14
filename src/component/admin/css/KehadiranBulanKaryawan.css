@@ -1,0 +1,27 @@
+/* Memastikan tabel responsif */
+table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  
+  table th, table td {
+    word-wrap: break-word;
+    white-space: nowrap;
+  }
+  
+  @media (max-width: 600px) {
+    .responsive-container {
+      overflow-x: auto;
+    }
+  
+    input[type="month"], button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  
+    button {
+      font-size: 12px;
+      padding: 8px;
+    }
+  }
+  
