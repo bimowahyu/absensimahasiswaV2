@@ -67,16 +67,16 @@ const Sidebar = () => {
               <NavLink to="/creategaji"><IoCalculatorOutline /> Penggajian</NavLink>
             </li>
             <li>
-              <NavLink to="/datacabang"><IoLocationOutline /> Data Cabang</NavLink>
+              <NavLink to="/datalokasi"><IoLocationOutline /> Data Cabang</NavLink>
             </li>
             <li>
-              <NavLink to="/datacabang/tambah"><IoPricetag /> Tambah Data Cabang</NavLink>
+              <NavLink to="/datalokasi/tambah"><IoPricetag /> Tambah Data Cabang</NavLink>
             </li>
             <li>
-              <NavLink to="/datakaryawan"><IoAccessibilityOutline /> Data Karyawan</NavLink>
+              <NavLink to="/datamahasiswa"><IoAccessibilityOutline /> Data Karyawan</NavLink>
             </li>
             <li>
-              <NavLink to="/karyawan/tambah"><IoDuplicateOutline /> Tambah Data Karyawan</NavLink>
+              <NavLink to="/mahasiswa/tambah"><IoDuplicateOutline /> Tambah Data Karyawan</NavLink>
             </li>
           </ul>
           <p className="menu-label">Settings</p>

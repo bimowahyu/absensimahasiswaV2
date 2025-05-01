@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authAdminReducer from "../fitur/AuthSlice";
-import authKaryawanReducer from "../fitur/AuthKaryawan"; // Perbaiki nama impor
+import authMahasiswaReducer from "../fitur/AuthMahasiswa";
+import authDosenReducer from '../fitur/AuthSliceDosen';
 
 export const store = configureStore({
   reducer: {
     authAdmin: authAdminReducer, // untuk admin
-    authKaryawan: authKaryawanReducer // untuk karyawan, beri nama yang konsisten
+    authMahasiswa: authMahasiswaReducer,
+    authDosen : authDosenReducer
   },
 });

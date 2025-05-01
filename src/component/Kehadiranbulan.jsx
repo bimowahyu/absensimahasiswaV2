@@ -52,6 +52,11 @@ const formatTime = (hours, minutes) => {
   return `${hours}:${minutes.toString().padStart(2, '0')}`;
 };
 
+// Format status with proper capitalization
+const formatStatus = (status) => {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
 export const Kehadiranbulan = () => {
   const now = new Date();
   const [absensiData, setAbsensiData] = useState([]);
@@ -66,12 +71,14 @@ export const Kehadiranbulan = () => {
         const response = await axios.get(`${getApiBaseUrl()}/absensibulan/get?bulan=${bulan}&tahun=${tahun}`, { withCredentials: true });
         if (response.data.length === 0) {
           setError("Tidak ada data absensi untuk bulan ini.");
+          setAbsensiData([]);
         } else {
           setAbsensiData(response.data.sort((a, b) => new Date(a.tgl_absensi) - new Date(b.tgl_absensi)));
           setError(null); // Clear error on success
         }
       } catch (error) {
         setError(error.message);
+        setAbsensiData([]);
       }
     };
 
@@ -154,22 +161,22 @@ export const Kehadiranbulan = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                {/* <Grid item xs={12} md={4}>
                   <Card>
                     <CardContent>
                       <Typography variant="body2">Total Jam Kerja</Typography>
                       <Typography variant="h6">{totalWorkHours} Jam</Typography>
                     </CardContent>
                   </Card>
-                </Grid>
-                <Grid item xs={12} md={4}>
+                </Grid> */}
+                {/* <Grid item xs={12} md={4}>
                   <Card>
                     <CardContent>
                       <Typography variant="body2">Total Lembur</Typography>
                       <Typography variant="h6">{totalOvertimeHours} Jam</Typography>
                     </CardContent>
                   </Card>
-                </Grid>
+                </Grid> */}
               </Grid>
 
               {/* Display Attendance Table */}
@@ -178,10 +185,10 @@ export const Kehadiranbulan = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell align="center"><strong>Tanggal</strong></TableCell>
+                      <TableCell align="center"><strong>Mata Kuliah</strong></TableCell>
                       <TableCell align="center"><strong>Jam Masuk</strong></TableCell>
                       <TableCell align="center"><strong>Jam Keluar</strong></TableCell>
-                      <TableCell align="center"><strong>Total Jam Kerja</strong></TableCell>
-                      <TableCell align="center"><strong>Lembur</strong></TableCell>
+                      <TableCell align="center"><strong>Status</strong></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -195,17 +202,13 @@ export const Kehadiranbulan = () => {
                           <TableCell align="center">
                             {new Date(absensi.tgl_absensi).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                           </TableCell>
+                          <TableCell align="center">
+                            {absensi.matkul ? absensi.matkul.nama_matkul : '-'}
+                          </TableCell>
                           <TableCell align="center">{absensi.jam_masuk || '-'}</TableCell>
                           <TableCell align="center">{absensi.jam_keluar || '-'}</TableCell>
                           <TableCell align="center">
-                            {absensi.jam_masuk && absensi.jam_keluar 
-                              ? `${workingTime.totalHours}:${workingTime.totalMinutes.toString().padStart(2, '0')}`
-                              : '-'}
-                          </TableCell>
-                          <TableCell align="center">
-                            {(workingTime.overtime.hours > 0 || workingTime.overtime.minutes > 0)
-                              ? `${workingTime.overtime.hours}:${workingTime.overtime.minutes.toString().padStart(2, '0')}`
-                              : '-'}
+                            {absensi.status ? formatStatus(absensi.status) : '-'}
                           </TableCell>
                         </TableRow>
                       );

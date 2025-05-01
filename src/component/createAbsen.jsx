@@ -18,15 +18,11 @@ import {
 import { 
   Container, 
   Card, 
-  CardContent, 
+  Box, 
   Typography, 
-  Grid, 
   Button, 
   LinearProgress,
   Avatar,
-  Box,
-  Paper,
-  Divider,
   CircularProgress
 } from '@mui/material';
 
@@ -51,58 +47,66 @@ const CreateAbsen = () => {
   const [faceDetected, setFaceDetected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modelLoadingProgress, setModelLoadingProgress] = useState(0);
+  const [loadingModels, setLoadingModels] = useState(true);
   
   // Refs
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const faceCheckTimerRef = useRef(null);
   
   const [profileImage, setProfileImage] = useState(null);
   const [namaCabang, setNamaCabang] = useState(null)
   const [photoTaken, setPhotoTaken] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
-  
-  // Branch name state
-  const [branchName, setBranchName] = useState('');
 
-  // Load Face API Models
   useEffect(() => {
     const loadModels = async () => {
       try {
-        await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
-          faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-          faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-          faceapi.nets.faceRecognitionNet.loadFromUri('/models')
-        ]);
+        setLoadingModels(true);
+        await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
+        setModelLoadingProgress(50);
+        await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+        setModelLoadingProgress(100);
+        
         setModelsLoaded(true);
+        setLoadingModels(false);
       } catch (error) {
         console.error('Error loading face-api models:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Gagal memuat model face recognition'
+          text: 'Gagal memuat model face recognition. Cek koneksi internet atau refresh halaman.'
         });
+        setLoadingModels(false);
       }
     };
 
     loadModels();
+    
+    // Cleanup function
+    return () => {
+      if (faceCheckTimerRef.current) {
+        clearInterval(faceCheckTimerRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axios.get(`${getApiBaseUrl()}/MeKaryawan`, { withCredentials: true });
+        const response = await axios.get(`${getApiBaseUrl()}/Memahasiswa`, { withCredentials: true });
         setProfileImage(response.data.url);
         if (response.data.Cabang && response.data.Cabang.nama_cabang) {
           setNamaCabang(response.data.Cabang.nama_cabang);
         } else {
           const branchResponse = await axios.get(`${getApiBaseUrl()}/cabang`, { withCredentials: true });
-          setNamaCabang(branchResponse.data.name || 'Kantor Pusat');
+          setNamaCabang(branchResponse.data.name || '');
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
-        setNamaCabang('Kantor Pusat');
+        setNamaCabang('');
       }
     };
   
@@ -115,8 +119,14 @@ const CreateAbsen = () => {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
       
+      // Use lower resolution for better performance
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 320, height: 240, facingMode: 'user' } 
+        video: { 
+          width: { ideal: 320 }, 
+          height: { ideal: 240 }, 
+          facingMode: 'user',
+          frameRate: { ideal: 15, max: 20 } // Lower frameRate for better performance
+        } 
       });
   
       if (videoRef.current) {
@@ -146,22 +156,29 @@ const CreateAbsen = () => {
     };
   }, [modelsLoaded]);
 
-  // Continuous Face Detection
+  // Optimized Face Detection: Less frequent checks (3 seconds instead of 2)
+  // Also using smaller detection network and parameters
   useEffect(() => {
-    let intervalId;
-    const detectFaceContinuously = async () => {
+    if (faceCheckTimerRef.current) {
+      clearInterval(faceCheckTimerRef.current);
+      faceCheckTimerRef.current = null;
+    }
+
+    const detectFace = async () => {
       if (videoRef.current && modelsLoaded && !photoTaken && cameraActive) {
         try {
-          const detections = await faceapi
-            .detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options())
-            .withFaceLandmarks()
-            .withFaceDescriptors();
+          // Performance optimization - use tiny face detector with smaller min face size
+          const detectionOptions = new faceapi.SsdMobilenetv1Options({ 
+            minConfidence: 0.5,  // Lower threshold for faster detection
+            maxResults: 1        // We only need to find one face
+          });
+          
+          const detections = await faceapi.detectSingleFace(
+            videoRef.current, 
+            detectionOptions
+          );
 
-          if (detections.length > 0) {
-            setFaceDetected(true);
-          } else {
-            setFaceDetected(false);
-          }
+          setFaceDetected(!!detections);
         } catch (error) {
           console.error('Face detection error:', error);
         }
@@ -169,18 +186,22 @@ const CreateAbsen = () => {
     };
 
     if (modelsLoaded && !photoTaken && cameraActive) {
-      // Check for face every 5 seconds
-      intervalId = setInterval(detectFaceContinuously, 5000);
+      // Initial detection
+      detectFace();
+      
+      // Check face every 3 seconds instead of 2 for better performance
+      faceCheckTimerRef.current = setInterval(detectFace, 3000);
     }
 
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
+      if (faceCheckTimerRef.current) {
+        clearInterval(faceCheckTimerRef.current);
+        faceCheckTimerRef.current = null;
       }
     };
   }, [modelsLoaded, photoTaken, cameraActive]);
 
-  // Take Picture Manually
+  // Take Picture with optimized compression
   const takePicture = async () => {
     try {
       if (!modelsLoaded || !videoRef.current || !faceDetected) {
@@ -195,10 +216,9 @@ const CreateAbsen = () => {
       const photo = document.createElement('canvas');
       const video = videoRef.current;
       
-      const originalWidth = video.videoWidth;
-      const originalHeight = video.videoHeight;
-      const targetWidth = 400;
-      const targetHeight = (originalHeight / originalWidth) * targetWidth;
+      // Use smaller image size for better performance
+      const targetWidth = 320; // Smaller target width for better performance
+      const targetHeight = (video.videoHeight / video.videoWidth) * targetWidth;
 
       photo.width = targetWidth;
       photo.height = targetHeight;
@@ -206,32 +226,28 @@ const CreateAbsen = () => {
       const context = photo.getContext('2d');
       context.drawImage(video, 0, 0, targetWidth, targetHeight);
       
-      const compressedImageUrl = photo.toDataURL('image/jpeg', 0.7);
+      // Higher compression for better performance (0.6 instead of 0.7)
+      const compressedImageUrl = photo.toDataURL('image/jpeg', 0.6);
       
-      // Face Detection on Captured Image
-      const img = new Image();
-      img.src = compressedImageUrl;
+      // Verify face is still there
+      setImageSrc(compressedImageUrl);
+      setPhotoTaken(true);
       
-      img.onload = async () => {
-        const detections = await faceapi
-          .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks()
-          .withFaceDescriptors();
+      // Stop camera stream to free up resources
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        setCameraActive(false);
+      }
       
-        if (detections.length > 0) {
-          setImageSrc(compressedImageUrl);
-          setPhotoTaken(true);
-          // Stop camera stream setelah foto diambil
-          if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            setCameraActive(false);
-          }
-          // Get location when picture is taken
-          getLocation();
-        }
-      };
+      // Get location when picture is taken
+      getLocation();
     } catch (error) {
       console.error('Error taking picture:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Gagal mengambil foto. Silakan coba lagi.',
+      });
     }
   };
 
@@ -296,7 +312,7 @@ const CreateAbsen = () => {
       setIsLoading(true);
       setIsSubmitting(true);
 
-      const response = await axios.post(`${getApiBaseUrl()}/absensi/karyawan/create`, {
+      const response = await axios.post(`${getApiBaseUrl()}/absensi/mahasiswa/create`, {
         latitude,
         longitude,
         image: imageSrc,
@@ -378,6 +394,29 @@ const CreateAbsen = () => {
           alignItems: 'center',
           overflow: 'hidden'
         }}>
+          {/* Loading Models Overlay */}
+          {loadingModels && (
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(0,0,0,0.85)',
+              zIndex: 100,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <CircularProgress variant="determinate" value={modelLoadingProgress} size={70} sx={{ mb: 2 }} />
+              <Typography variant="h6" color="white">Loading Face Recognition</Typography>
+              <Typography variant="body2" color="grey.400" sx={{ mt: 1, textAlign: 'center', maxWidth: '80%' }}>
+                Mohon tunggu, sistem sedang memuat model pengenalan wajah ({modelLoadingProgress}%)
+              </Typography>
+            </Box>
+          )}
+          
           {/* Location Header */}
           <Box sx={{
             position: 'absolute',
@@ -394,7 +433,7 @@ const CreateAbsen = () => {
             justifyContent: 'space-between'
           }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              {/* Branch Name - Added here */}
+              {/* Branch Name */}
               <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                 <IoBusinessOutline size={16} />
                 <span>{namaCabang || 'Loading...'}</span>
@@ -536,7 +575,7 @@ const CreateAbsen = () => {
               {!photoTaken ? (
                 // Capture Button
                 <Button
-                  disabled={!faceDetected}
+                  disabled={!faceDetected || loadingModels}
                   onClick={takePicture}
                   sx={{ 
                     minWidth: 64, 

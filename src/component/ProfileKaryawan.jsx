@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Container, Card, CardContent, Typography, Grid, Avatar, Button } from '@mui/material';
 import { IoPerson } from 'react-icons/io5';
 import { NavLink, useNavigate } from "react-router-dom";
-import { getMe } from '../fitur/AuthKaryawan';
+import { getMe } from '../fitur/AuthMahasiswa';
 const getApiBaseUrl = () => {
     const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
    const baseUrl = process.env.REACT_APP_API_BASE_URL.replace(/^https?:\/\//, '');
@@ -18,7 +18,7 @@ const ProfileKaryawan = () => {
         const fetchProfile = async () => {
             try {
               
-                const response = await axios.get(`${getApiBaseUrl()}/MeKaryawan`,{withCredentials: true});
+                const response = await axios.get(`${getApiBaseUrl()}/Memahasiswa`,{withCredentials: true});
                 setDataKaryawan(response.data); 
             } catch (error) {
                 setError(error.message);

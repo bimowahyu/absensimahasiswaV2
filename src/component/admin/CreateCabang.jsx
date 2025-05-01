@@ -34,14 +34,14 @@ export const CreateCabang = () => {
     e.preventDefault();
     try {
       await axios.post(`${getApiBaseUrl()}/cabang`, {
-        kode_cabang: kodeCabang,
-        nama_cabang: namaCabang,
+        kode: kodeCabang,
+        nama: namaCabang,
         latitude,
         longitude,
         radius,
       });
-      setMessage('Cabang berhasil ditambahkan');
-      navigate('/datacabang');
+      setMessage('Lokasi berhasil ditambahkan');
+      navigate('/datalokasi');
     } catch (error) {
       setMessage(error.response?.data?.msg || 'Terjadi kesalahan');
     }
@@ -52,7 +52,7 @@ export const CreateCabang = () => {
     <DashboardContainer>
       <Paper elevation={3} sx={{ p: 3, mt: 5, borderRadius: 2 }}>
         <Typography variant="h5" gutterBottom align="center">
-          Tambah Cabang Baru
+          Tambah Lokasi Baru
         </Typography>
         {message && (
           <Typography color="error" align="center" sx={{ mb: 2 }}>
@@ -60,8 +60,8 @@ export const CreateCabang = () => {
           </Typography>
         )}
         <Box component="form" onSubmit={saveCabang} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField label="Nama Cabang" variant="outlined" fullWidth value={namaCabang} onChange={(e) => setNamaCabang(e.target.value)} required />
-          <TextField label="Kode Cabang" variant="outlined" fullWidth value={kodeCabang} onChange={(e) => setKodeCabang(e.target.value)} required />
+          <TextField label="Nama" variant="outlined" fullWidth value={namaCabang} onChange={(e) => setNamaCabang(e.target.value)} required />
+          <TextField label="Kode" variant="outlined" fullWidth value={kodeCabang} onChange={(e) => setKodeCabang(e.target.value)} required />
           <TextField label="Latitude" variant="outlined" fullWidth value={latitude} onChange={(e) => setLatitude(e.target.value)} required />
           <TextField label="Longitude" variant="outlined" fullWidth value={longitude} onChange={(e) => setLongitude(e.target.value)} required />
           <TextField label="Radius Absensi (Meter)" type="number" variant="outlined" fullWidth value={radius} onChange={(e) => setRadius(e.target.value)} required />

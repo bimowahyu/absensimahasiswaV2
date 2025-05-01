@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Form, Button, Card, Spinner, InputGroup } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Card, Spinner } from 'react-bootstrap';
 import styled from 'styled-components';
-import { FiUser, FiClock, FiCalendar, FiSearch } from 'react-icons/fi';
+import { FiUser, FiClock, FiCalendar, FiSearch, FiBook } from 'react-icons/fi';
 import { FaRegClock } from 'react-icons/fa';
 
 const DashboardContainer = styled(Container)`
@@ -21,8 +21,6 @@ const getApiBaseUrl = () => {
   const baseUrl = process.env.REACT_APP_API_BASE_URL.replace(/^https?:\/\//, '');
   return `${protocol}://${baseUrl}`;
 };
-
-
 
 const StyledCard = styled(Card)`
   border-radius: 12px;
@@ -128,32 +126,30 @@ const MessageAlert = styled.div`
   }
 `;
 
-const NoResultsMessage = styled.div`
-  padding: 12px;
-  text-align: center;
-  color: #6c757d;
-  font-style: italic;
-`;
-
 export const AbsenManual = () => {
   const [tgl_absensi, setTanggalAbsensi] = useState('');
   const [jam_masuk, setJamMasuk] = useState('');
   const [jam_keluar, setJamKeluar] = useState('');
-  const [karyawans, setKaryawans] = useState([]);
-  const [karyawanId, setKaryawan] = useState('');
+  const [mahasiswas, setMahasiswas] = useState([]);
+  const [mahasiswaId, setMahasiswaId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [matkuls, setMatkuls] = useState([]);
+  const [matkul_id, setMatkulId] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${getApiBaseUrl()}/karyawan`);
-        setKaryawans(Array.isArray(response.data.karyawan) ? response.data.karyawan : []);
+        const responseMhs = await axios.get(`${getApiBaseUrl()}/mahasiswa`);
+        setMahasiswas(Array.isArray(responseMhs.data.mahasiswa) ? responseMhs.data.mahasiswa : []);
+        
+        const responseMatkul = await axios.get(`${getApiBaseUrl()}/matkul`);
+        setMatkuls(Array.isArray(responseMatkul.data.matkul) ? responseMatkul.data.matkul : []);
       } catch (error) {
-        setError('Gagal mengambil data karyawan.');
+        setError('Gagal mengambil data.');
       }
     };
     fetchData();
@@ -162,22 +158,23 @@ export const AbsenManual = () => {
   const saveAbsen = async (e) => {
     e.preventDefault();
     
-    if (!karyawanId || !jam_masuk || !jam_keluar || !tgl_absensi) {
-      setError('Mohon lengkapi semua data absensi.');
+    if (!mahasiswaId || !matkul_id || !tgl_absensi) {
+      setError('Mohon lengkapi data mahasiswa, mata kuliah, dan tanggal.');
       return;
     }
     
     setIsLoading(true);
     try {
       await axios.post(`${getApiBaseUrl()}/absensi/manual`, {
-        karyawanId,
+        mahasiswaId,
+        matkul_id,
         jam_masuk,
         jam_keluar,
         tanggal: tgl_absensi,
       });
       setMessage('Absensi berhasil dibuat');
       setTimeout(() => {
-        navigate('/data');
+        navigate('/DashboardAdmin');
       }, 1500);
     } catch (error) {
       setError(error.response ? error.response.data.msg : 'Gagal menambah absensi.');
@@ -186,60 +183,83 @@ export const AbsenManual = () => {
     }
   };
 
-  const filteredKaryawans = karyawans.filter(karyawan => 
-    karyawan.nama_lengkap.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredMahasiswas = mahasiswas.filter(mhs => 
+    mhs.nama_lengkap.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <DashboardContainer>
       <StyledCard>
         <CardHeader>
-          <CardTitle>Tambah Absensi Manual</CardTitle>
+          <CardTitle>Tambah Absensi Mahasiswa</CardTitle>
         </CardHeader>
         <CardBody>
           {message && <MessageAlert className="success">{message}</MessageAlert>}
           {error && <MessageAlert className="error">{error}</MessageAlert>}
           
           <Form onSubmit={saveAbsen}>
-            <FormGroup className="mb-4">
-              <Form.Label>Cari Karyawan</Form.Label>
+            <FormGroup>
+              <Form.Label>Cari Mahasiswa</Form.Label>
               <FormIcon>
                 <FiSearch />
               </FormIcon>
               <StyledFormControl
                 type="text"
-                placeholder="Masukkan nama karyawan"
+                placeholder="Masukkan nama mahasiswa"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </FormGroup>
 
-            <FormGroup className="mb-4">
-              <Form.Label>Pilih Karyawan</Form.Label>
+            <FormGroup>
+              <Form.Label>Pilih Mahasiswa</Form.Label>
               <FormIcon>
                 <FiUser />
               </FormIcon>
               <StyledFormSelect
-                value={karyawanId}
-                onChange={(e) => setKaryawan(e.target.value)}
+                value={mahasiswaId}
+                onChange={(e) => setMahasiswaId(e.target.value)}
                 required
               >
-                <option value="">Pilih Karyawan</option>
-                {filteredKaryawans.length > 0 ? (
-                  filteredKaryawans.map((karyawan) => (
-                    <option key={karyawan.id} value={karyawan.id}>
-                      {`${karyawan.nama_lengkap} - ${karyawan.Cabang ? karyawan.Cabang.nama_cabang : 'Cabang Tidak Tersedia'}`}
+                <option value="">Pilih Mahasiswa</option>
+                {filteredMahasiswas.length > 0 ? (
+                  filteredMahasiswas.map((mhs) => (
+                    <option key={mhs.id} value={mhs.id}>
+                      {`${mhs.nama_lengkap} - ${mhs.Cabang ? mhs.Cabang.nama : 'Cabang Tidak Tersedia'}`}
                     </option>
                   ))
                 ) : (
-                  searchTerm ? <option disabled>Tidak ada karyawan yang sesuai</option> : null
+                  searchTerm ? <option disabled>Tidak ada mahasiswa yang sesuai</option> : null
+                )}
+              </StyledFormSelect>
+            </FormGroup>
+
+            <FormGroup>
+              <Form.Label>Pilih Mata Kuliah</Form.Label>
+              <FormIcon>
+                <FiBook />
+              </FormIcon>
+              <StyledFormSelect
+                value={matkul_id}
+                onChange={(e) => setMatkulId(e.target.value)}
+                required
+              >
+                <option value="">Pilih Mata Kuliah</option>
+                {matkuls.length > 0 ? (
+                  matkuls.map((matkul) => (
+                    <option key={matkul.id} value={matkul.id}>
+                      {matkul.nama_matkul}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>Tidak ada mata kuliah</option>
                 )}
               </StyledFormSelect>
             </FormGroup>
 
             <Row>
               <Col md={6}>
-                <FormGroup className="mb-4">
+                <FormGroup>
                   <Form.Label>Jam Masuk</Form.Label>
                   <FormIcon>
                     <FiClock />
@@ -248,12 +268,11 @@ export const AbsenManual = () => {
                     type="time"
                     value={jam_masuk}
                     onChange={(e) => setJamMasuk(e.target.value)}
-                    required
                   />
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <FormGroup className="mb-4">
+                <FormGroup>
                   <Form.Label>Jam Keluar</Form.Label>
                   <FormIcon>
                     <FaRegClock />
@@ -262,13 +281,12 @@ export const AbsenManual = () => {
                     type="time"
                     value={jam_keluar}
                     onChange={(e) => setJamKeluar(e.target.value)}
-                    required
                   />
                 </FormGroup>
               </Col>
             </Row>
 
-            <FormGroup className="mb-4">
+            <FormGroup>
               <Form.Label>Tanggal Absensi</Form.Label>
               <FormIcon>
                 <FiCalendar />
@@ -285,14 +303,7 @@ export const AbsenManual = () => {
               <StyledButton type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-2"
-                    />
+                    <Spinner animation="border" size="sm" className="me-2" />
                     Memproses...
                   </>
                 ) : (

@@ -14,7 +14,7 @@ export const EditCabangPages = () => {
 
   useEffect(() => {
     if (isError) {
-      navigate("/datacabang");
+      navigate("/datalokasi");
     }
   }, [isError, navigate]);
   return (

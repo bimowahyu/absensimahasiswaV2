@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Container, Grid, Typography, Paper, CircularProgress } from '@mui/material';
-import { FaUsers, FaBuilding, FaCalendarAlt } from 'react-icons/fa';
+import { FaBook, FaUsers, FaMapMarkerAlt, FaCalendarCheck } from 'react-icons/fa';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import AbsensiChart from './DataAbsensi';
@@ -11,7 +11,7 @@ import axios from 'axios';
 // Styled components with modern design
 const DashboardContainer = styled(Box)`
   padding: 1.5rem;
-  margin-left: 250px; /* Width of your sidebar */
+  margin-left: 250px;
   width: calc(100% - 250px);
   background-color: #f8f9fa;
   min-height: 100vh;
@@ -162,16 +162,21 @@ const iconVariants = {
 };
 
 const DashboardAdmin = () => {
-  const { data: karyawanData, error: karyawanError } = useSWR(`${getApiBaseUrl()}/karyawan`, fetcher);
-  const { data: cabangData, error: cabangError } = useSWR(`${getApiBaseUrl()}/cabang`, fetcher);
+  const { data: mahasiswaData, error: mahasiswaError } = useSWR(`${getApiBaseUrl()}/mahasiswa`, fetcher);
+  const { data: matkulData, error: matkulError } = useSWR(`${getApiBaseUrl()}/matkul`, fetcher);
+  const { data: lokasiData, error: lokasiError } = useSWR(`${getApiBaseUrl()}/cabang`, fetcher);
   const { data: absensiHariIniData, error: absensiHariIniError } = useSWR(`${getApiBaseUrl()}/absensihari/get`, fetcher);
 
-  const totalKaryawan = karyawanData?.totalKaryawan || 0;
-  const totalCabang = cabangData?.length || 0;
-  const totalAbsenHariIni = absensiHariIniData?.jumlahAbsensi || 0;
+  const totalMahasiswa = mahasiswaData?.totalMahasiswa || 0;
+  const totalMatkul = matkulData?.totalMatkul || 0;
+  const totalLokasi = lokasiData?.length || 0;
+  const totalKehadiranHariIni = absensiHariIniData?.jumlahAbsensi || 0;
 
-  const isLoading = (!karyawanData && !karyawanError) || (!cabangData && !cabangError) || (!absensiHariIniData && !absensiHariIniError);
-  const isError = karyawanError || cabangError || absensiHariIniError;
+  const isLoading = (!mahasiswaData && !mahasiswaError) || 
+                   (!matkulData && !matkulError) || 
+                   (!lokasiData && !lokasiError) || 
+                   (!absensiHariIniData && !absensiHariIniError);
+  const isError = mahasiswaError || matkulError || lokasiError || absensiHariIniError;
 
   if (isLoading) {
     return (
@@ -183,7 +188,7 @@ const DashboardAdmin = () => {
   }
 
   if (isError) {
-    console.error('Error fetching data:', karyawanError || cabangError || absensiHariIniError);
+    console.error('Error fetching data:', mahasiswaError || matkulError || lokasiError || absensiHariIniError);
     return (
       <DashboardContainer>
         <Typography variant="h6" color="error" sx={{ fontWeight: 500 }}>
@@ -197,7 +202,8 @@ const DashboardAdmin = () => {
     <DashboardContainer>
       <Container maxWidth="xl">
         <Grid container spacing={4}>
-          <Grid item xs={12} sm={6} md={4}>
+          {/* Card Total Mahasiswa */}
+          <Grid item xs={12} sm={6} md={3}>
             <StatsCard
               as={motion.div}
               initial="hidden"
@@ -208,8 +214,8 @@ const DashboardAdmin = () => {
             >
               <CardContent>
                 <StatsInfo>
-                  <StatsTitle variant="p">Total Karyawan</StatsTitle>
-                  <StatsValue variant="p">{totalKaryawan.toLocaleString()}</StatsValue>
+                  <StatsTitle variant="p">Total Mahasiswa</StatsTitle>
+                  <StatsValue variant="p">{totalMahasiswa.toLocaleString()}</StatsValue>
                 </StatsInfo>
                 <IconBox
                   as={motion.div}
@@ -221,7 +227,8 @@ const DashboardAdmin = () => {
             </StatsCard>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          {/* Card Total Matkul */}
+          <Grid item xs={12} sm={6} md={3}>
             <StatsCard
               as={motion.div}
               initial="hidden"
@@ -232,20 +239,46 @@ const DashboardAdmin = () => {
             >
               <CardContent>
                 <StatsInfo>
-                  <StatsTitle variant="p">Total Cabang</StatsTitle>
-                  <StatsValue variant="p">{totalCabang.toLocaleString()}</StatsValue>
+                  <StatsTitle variant="p">Total Mata Kuliah</StatsTitle>
+                  <StatsValue variant="p">{totalMatkul.toLocaleString()}</StatsValue>
                 </StatsInfo>
                 <IconBox
                   as={motion.div}
                   variants={iconVariants}
                 >
-                  <FaBuilding size={32} />
+                  <FaBook size={32} />
                 </IconBox>
               </CardContent>
             </StatsCard>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          {/* Card Total Lokasi Presensi */}
+          <Grid item xs={12} sm={6} md={3}>
+            <StatsCard
+              as={motion.div}
+              initial="hidden"
+              animate="visible"
+              variants={cardVariants}
+              style={{ background: 'linear-gradient(135deg, #FF416C, #FF4B2B)' }}
+              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+            >
+              <CardContent>
+                <StatsInfo>
+                  <StatsTitle variant="p">Total Lokasi Presensi</StatsTitle>
+                  <StatsValue variant="p">{totalLokasi.toLocaleString()}</StatsValue>
+                </StatsInfo>
+                <IconBox
+                  as={motion.div}
+                  variants={iconVariants}
+                >
+                  <FaMapMarkerAlt size={32} />
+                </IconBox>
+              </CardContent>
+            </StatsCard>
+          </Grid>
+
+          {/* Card Total Kehadiran Hari Ini */}
+          <Grid item xs={12} sm={6} md={3}>
             <StatsCard
               as={motion.div}
               initial="hidden"
@@ -256,19 +289,20 @@ const DashboardAdmin = () => {
             >
               <CardContent>
                 <StatsInfo>
-                  <StatsTitle variant="p">Total Kehadiran Hari Ini</StatsTitle>
-                  <StatsValue variant="p">{totalAbsenHariIni.toLocaleString()}</StatsValue>
+                  <StatsTitle variant="p">Kehadiran Hari Ini</StatsTitle>
+                  <StatsValue variant="p">{totalKehadiranHariIni.toLocaleString()}</StatsValue>
                 </StatsInfo>
                 <IconBox
                   as={motion.div}
                   variants={iconVariants}
                 >
-                  <FaCalendarAlt size={32} />
+                  <FaCalendarCheck size={32} />
                 </IconBox>
               </CardContent>
             </StatsCard>
           </Grid>
 
+          {/* Grafik Absensi */}
           <Grid item xs={12}>
             <SectionTitle variant="h5">Data Absensi Bulan Ini</SectionTitle>
             <ChartContainer>
@@ -276,6 +310,7 @@ const DashboardAdmin = () => {
             </ChartContainer>
           </Grid>
 
+          {/* Tabel Absensi Harian */}
           <Grid item xs={12}>
             <SectionTitle variant="h5">Data Absensi Hari Ini</SectionTitle>
             <ChartContainer>

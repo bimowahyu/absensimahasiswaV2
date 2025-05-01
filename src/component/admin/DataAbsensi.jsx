@@ -46,7 +46,7 @@ const AbsensiChart = () => {
           color: '#333', 
           margin: 0 
         }}>
-          Grafik Kehadiran Karyawan - {new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(now)}
+          Grafik Kehadiran - {new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(now)}
         </h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 

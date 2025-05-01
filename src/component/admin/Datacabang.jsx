@@ -59,7 +59,7 @@ export const Datacabang = () => {
   };
 
   const handleShowModal = (cabang) => {
-    const [latitude, longitude] = cabang.lokasi_kantor.split(',').map(coord => parseFloat(coord.trim()));
+    const [latitude, longitude] = cabang.lokasi.split(',').map(coord => parseFloat(coord.trim()));
     if (latitude && longitude) {
       setSelectedCabang({ ...cabang, latitude, longitude });
       setShowModal(true);
@@ -81,9 +81,9 @@ export const Datacabang = () => {
           <TableHead>
             <TableRow>
               <TableCell>No</TableCell>
-              <TableCell>Nama Cabang</TableCell>
-              <TableCell>Kode Cabang</TableCell>
-              <TableCell>Lokasi Kantor</TableCell>
+              <TableCell>Nama</TableCell>
+              <TableCell>Kode</TableCell>
+              <TableCell>Lokasi</TableCell>
               <TableCell>Radius Absensi</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -92,13 +92,13 @@ export const Datacabang = () => {
             {cabang.map((cabang, index) => (
               <TableRow key={cabang.id}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{cabang.nama_cabang}</TableCell>
-                <TableCell>{cabang.kode_cabang}</TableCell>
-                <TableCell>{cabang.lokasi_kantor}</TableCell>
-                <TableCell>{cabang.radius} Meter</TableCell>
+                <TableCell>{cabang.nama || 'na'}</TableCell>
+                <TableCell>{cabang.kode || 'na'}</TableCell>
+                <TableCell>{cabang.lokasi || 'na'}</TableCell>
+                <TableCell>{cabang.radius || 'na'} Meter</TableCell>
                 <TableCell>
                   <Button variant="primary" size="sm" onClick={() => handleShowModal(cabang)}>Lihat Lokasi</Button>
-                  <Link to={`/datacabang/edit/${cabang.id}`} className="btn btn-info btn-sm mx-1">Edit</Link>
+                  <Link to={`/datalokasi/edit/${cabang.id}`} className="btn btn-info btn-sm mx-1">Edit</Link>
                   <Button variant="danger" size="sm" onClick={() => deleteCabang(cabang.id)}>Delete</Button>
                 </TableCell>
               </TableRow>
@@ -125,9 +125,9 @@ export const Datacabang = () => {
     {selectedCabang && (
       <>
         <div>
-          <p><strong>Nama Cabang:</strong> {selectedCabang.nama_cabang}</p>
-          <p><strong>Kode Cabang:</strong> {selectedCabang.kode_cabang}</p>
-          <p><strong>Lokasi Kantor:</strong> {selectedCabang.lokasi_kantor}</p>
+          <p><strong>Nama Cabang:</strong> {selectedCabang.nama}</p>
+          <p><strong>Kode Cabang:</strong> {selectedCabang.kode}</p>
+          <p><strong>Lokasi Kantor:</strong> {selectedCabang.lokasi}</p>
           <p><strong>Radius Absensi:</strong> {selectedCabang.radius} Meter</p>
         </div>
         
@@ -145,7 +145,7 @@ export const Datacabang = () => {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
                 <Marker position={[selectedCabang.latitude, selectedCabang.longitude]}>
-                  <Popup>{selectedCabang.nama_cabang}</Popup>
+                  <Popup>{selectedCabang.nama}</Popup>
                 </Marker>
                 <Circle
                   center={[selectedCabang.latitude, selectedCabang.longitude]}

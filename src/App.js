@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Login from "./component/loginAdmin";
+// import Login from "./component/loginAdmin";
 import LoginKaryawan from "./component/loginKaryawan";
 import { DashboardKaryawanPages } from "./pages/DashboardPages";
 import { CreateAbsenPages } from "./pages/CreateAbsenPages";
@@ -10,27 +10,30 @@ import { CabangPages } from "./pages/adminpages/CabangPages";
 import Dashboard from "./pages/adminpages/DashboardAdminPages";
 import { TambahCabangPages } from "./pages/adminpages/CrateCabangPages";
 import { EditCabangPages } from "./pages/adminpages/EditCabangPages";
-import { DataKaryawanPages } from "./pages/adminpages/DataKaryawanPages";
-import { CreateKaryawanPages } from "./pages/adminpages/CreateKaryawanPages";
+import { DataMahasiswaPages } from "./pages/adminpages/DataMahasiswaPages";
+import { CreateMahasiswaPages } from "./pages/adminpages/CreateMahasiswaPages";
 import { ProfileAdminPages } from "./pages/adminpages/ProfileAdminPages";
 import { EditProfilePages } from "./pages/adminpages/EditProfilePages";
 import { EditprofileKaryawanPages } from "./pages/EditprofileKaryawanPages";
 import  DataPages  from "./pages/adminpages/DataPages";
 import { KehadiranBulanPages } from "./pages/KehadiranBulanPages";
 import DataBulanPages from "./pages/adminpages/DataBulanPages";
-import { EditKaryawanPages } from "./pages/adminpages/EditKaryawanPages";
-import { DataGajiPages } from "./pages/adminpages/DataGajiPages";
+import { EditMahasiswaPages } from "./pages/adminpages/EditMahasiswaPages";
+import { MatkulPages } from "./pages/adminpages/MatkulPages";
+import { DataDosenPages } from "./pages/adminpages/DataDosenPages";
+import { SettingAbsensiMatkulPages } from "./pages/adminpages/SettingAbsensiMatkulPages";
+import DashboardDosenPages from "./pages/adminpages/DashboardDosenPages";
+import RekapAbsenDosenPages from "./pages/adminpages/RekapAbsenDosenPages";
 // import Lokasi from "./component/lokasi";
+
+import { AkademikPages } from "./pages/AkademikPages";
 import { AbsenControllPages } from "./pages/adminpages/AbsenControllPages";
 import { EditAbsenPages } from "./pages/adminpages/EditAbsenPages";
-import { CreateGajiPages } from "./pages/adminpages/CreateGajiPages";
-import { ConfrimGajiPages } from "./pages/ConfrimGajiPages";
-import { DataGajiCabangPages } from "./pages/adminpages/DataGajiCabangPages";
-import { FormEditGajiPages } from "./pages/adminpages/FormEditGajiPages";
 import { AddAdminPages } from "./pages/adminpages/AddAdminPages";
 import { DataAdminPages } from "./pages/adminpages/DataAdminPages";
 import { AbsenManualPages } from "./pages/adminpages/AbsenManualPages";
 import { FormEditAdminPages } from "./pages/adminpages/FormEditAdminPages";
+
 // import { useNavigate } from "react-router-dom";
 // import { useSelector } from "react-redux";
 
@@ -44,16 +47,19 @@ function App() {
     <BrowserRouter>
       <Routes> 
         <Route path="/" element={<LoginKaryawan />} />
-        <Route path="/loginadmin" element={<Login />} />
-        <Route path="/datacabang" element={<CabangPages />} />
+        {/* <Route path="/loginadmin" element={<Login />} /> */}
+        <Route path="/datalokasi" element={<CabangPages />} />
         {/* <Route path="/dashboard" element={<PrivateRoute element={<DashboardKaryawanPages />} />} /> */}
         <Route path="/dashboard" element={<DashboardKaryawanPages />} />
+
+        <Route path="/dashboarddosen" element={<DashboardDosenPages />} />
+
         <Route path="/clockout" element={<ClockOutPages />} />
-        <Route path="/datacabang/tambah" element={<TambahCabangPages />} />
-        <Route path="/datacabang/edit/:id" element={<EditCabangPages />} />
-        <Route path="/datakaryawan" element={<DataKaryawanPages />} />
-        <Route path="/karyawan/tambah" element={<CreateKaryawanPages />} />
-        <Route path="/datakaryawan/edit/:id" element={<EditKaryawanPages />} />
+        <Route path="/datalokasi/tambah" element={<TambahCabangPages />} />
+        <Route path="/datalokasi/edit/:id" element={<EditCabangPages />} />
+        <Route path="/datamahasiswa" element={<DataMahasiswaPages />} />
+        <Route path="/mahasiswa/tambah" element={<CreateMahasiswaPages />} />
+        <Route path="/datamahasiswa/edit/:id" element={<EditMahasiswaPages />} />
         <Route path="/DashboardAdmin" element={<Dashboard />} />
         <Route path="/dashboard" element={<DashboardKaryawanPages />}/>
         <Route path="/createabsen" element={<CreateAbsenPages />} />
@@ -68,11 +74,13 @@ function App() {
         <Route path="/admin/edit/:id" element={<EditProfilePages />} />
         <Route path="/dataadmin/edit/:id" element={<FormEditAdminPages />} />
         <Route path="/editprofilekaryawan" element={<EditprofileKaryawanPages />} />
-        <Route path="/datagaji" element={<DataGajiPages />} />
-        <Route path="/editdatagaji/:id" element={<FormEditGajiPages />} />
-        <Route path="/creategaji" element={<CreateGajiPages />} />
-        <Route path="/datagajicabang" element={<DataGajiCabangPages />} />
-        <Route path="/confrimgaji" element={<ConfrimGajiPages />} />
+        <Route path="/presensi-matkul" element={<RekapAbsenDosenPages />}/>
+        <Route path="/datamatkul" element={<MatkulPages />} /> 
+        <Route path="/settingabsensimatkul" element={<SettingAbsensiMatkulPages />} /> 
+        <Route path="/datadosen" element={<DataDosenPages />} /> 
+       
+        <Route path="/akademik" element={<AkademikPages />} /> 
+       
         {/* <Route path="/lokasi" element={<Lokasi  />} /> */}
         
         <Route path="/editdata" element={<AbsenControllPages />} />

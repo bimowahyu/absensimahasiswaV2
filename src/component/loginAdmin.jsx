@@ -22,9 +22,8 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, isError, isSuccess, isLoading, message } = useSelector(
-    (state) => state.authAdmin
-  );
+  
+  const { user, isError, isSuccess, isLoading, message, isAuthenticated } = useSelector((state) => state.authAdmin);
 
   const { data, error } = useSWR(`${getApiBaseUrl()}/`, fetcher);
 
@@ -39,14 +38,49 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-    if (user || isSuccess) {
-      navigate("/DashboardAdmin");
+    // Clear any previous redirect flag
+    sessionStorage.removeItem('redirected');
+    
+    // Debug logs
+    console.log("Login state:", { 
+      isAuthenticated, 
+      user: user ? { ...user, role: user.role } : null,
+      isSuccess
+    });
+    
+    if (user && isAuthenticated) {
+      // Save the role to session storage
+      sessionStorage.setItem('userRole', user.role);
+      console.log(`User authenticated with role: ${user.role}`);
+      
+      // Flag to prevent multiple redirects
+      sessionStorage.setItem('redirected', 'true');
+      
+      // Direct redirect based on role
+      switch(user.role) {
+        case 'dosen':
+          console.log("Redirecting to dosen dashboard");
+          navigate('/dashboarddosen');
+          break;
+        case 'admin':
+          console.log("Redirecting to admin dashboard");
+          navigate('/dashboardadmin');
+          break;
+        case 'mahasiswa':
+          console.log("Redirecting to mahasiswa dashboard");
+          navigate('/dashboard');
+          break;
+        default:
+          console.warn("Unknown role:", user.role);
+          navigate('/dashboard');
+      }
     }
-    dispatch(reset());
-  }, [user, isSuccess, dispatch, navigate]);
+  }, [user, isAuthenticated, isSuccess, navigate]);
 
   const Auth = (e) => {
     e.preventDefault();
+    console.log("Login attempt with:", { email, password });
+    
     if (rememberMe) {
       localStorage.setItem('email', email);
       localStorage.setItem('password', password);
@@ -54,6 +88,9 @@ const Login = () => {
       localStorage.removeItem('email');
       localStorage.removeItem('password');
     }
+    
+    // Reset any previous states before login attempt
+    dispatch(reset());
     dispatch(LoginAdmin({ email, password }));
   };
 
@@ -81,7 +118,7 @@ const Login = () => {
           backgroundColor: 'rgba(255, 255, 255, 0.8)' 
         }}>
           <Typography variant="h4" gutterBottom>
-            Welcome Admin 👋
+            Welcome 👋
           </Typography>
           <Typography variant="body1" gutterBottom>
             Please sign-in to your account and start the adventure
@@ -103,6 +140,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email or username"
+              autoComplete="username"
             />
             <TextField
               fullWidth
@@ -113,6 +151,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
+              autoComplete="current-password"
             />
             <FormControlLabel
               control={

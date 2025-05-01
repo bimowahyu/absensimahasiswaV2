@@ -17,7 +17,7 @@ const Lokasi = ({ latitude, longitude }) => {
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await axios.get(`${getApiBaseUrl()}/MeKaryawan`);
+        const response = await axios.get(`${getApiBaseUrl()}/Memahasiswa`);
         const employeeData = response.data;
         setBranchId(employeeData.CabangId); // Periksa nama field ini
       } catch (error) {
@@ -47,8 +47,11 @@ const Lokasi = ({ latitude, longitude }) => {
   if (!branchData || latitude === null || longitude === null) {
     return null;
   }
-
-  const [lang_kantor, long_kantor] = branchData.lokasi_kantor.split(',');
+  if (!branchData || !branchData.lokasi || latitude === null || longitude === null) {
+    return null;
+  }
+  
+  const [lang_kantor, long_kantor] = branchData.lokasi.split(',');
   const radius = branchData.radius;
 
   const customMarkerIcon = L.icon({

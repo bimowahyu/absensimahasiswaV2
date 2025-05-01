@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { LoginUser, reset as resetUser } from "../fitur/AuthKaryawan";
+import { LoginUser, reset as resetUser } from "../fitur/AuthMahasiswa";
 import { LoginAdmin, reset as resetAdmin } from "../fitur/AuthSlice";
 import useSWR from 'swr';
 import axios from 'axios';
@@ -53,7 +53,7 @@ export const LoginKaryawan = () => {
     isSuccess: isUserSuccess, 
     isLoading: isUserLoading, 
     message: userMessage 
-  } = useSelector((state) => state.authKaryawan);
+  } = useSelector((state) => state.authMahasiswa);
   
   // Admin authentication state
   const { 
@@ -102,6 +102,19 @@ export const LoginKaryawan = () => {
     dispatch(resetAdmin());
   }, [admin, isAdminSuccess, dispatch, navigate]);
 
+  useEffect(() => {
+    if (admin) {
+      if (admin.role === 'dosen') {
+        navigate("/dashboarddosen");
+      } else if (admin.role === 'admin') {
+        navigate("/DashboardAdmin");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+    dispatch(resetAdmin());
+  }, [admin, dispatch, navigate]);
+  
   // Handle tab change
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);

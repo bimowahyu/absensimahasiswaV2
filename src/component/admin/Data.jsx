@@ -409,14 +409,14 @@ const Data = () => {
                                        </Box>
                                      </Tooltip>
                                    </TableCell>
-                                   <TableCell>
+                                   {/* <TableCell>
                                      <Tooltip title="Total Jam Kerja">
                                        <Box display="flex" alignItems="center" justifyContent="center">
                                          <AccessTimeIcon fontSize="small" sx={{ mr: 0.5 }} />
                                          Total
                                        </Box>
                                      </Tooltip>
-                                   </TableCell>
+                                   </TableCell> */}
                                    <TableCell>
                                      <Tooltip title="Jam Lembur (>8.5 jam)">
                                        <Box display="flex" alignItems="center" justifyContent="center">

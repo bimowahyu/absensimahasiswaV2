@@ -211,7 +211,7 @@ const DataAbsenHarian = () => {
 
   // Mengelompokkan absensi berdasarkan cabang
   const absensiPerCabang = absensiHarian.reduce((acc, absen) => {
-    const cabang = absen.karyawan.Cabang.nama_cabang;
+    const cabang = absen.mahasiswa.Cabang.nama;
     if (!acc[cabang]) {
       acc[cabang] = [];
     }
@@ -287,7 +287,7 @@ const DataAbsenHarian = () => {
                 {cabang}
               </CabangTitle>
               <Typography variant="subtitle2" color="textSecondary">
-                {absensiPerCabang[cabang].length} karyawan
+                {absensiPerCabang[cabang].length} mahasiswa
               </Typography>
             </CabangHeader>
             
@@ -299,7 +299,7 @@ const DataAbsenHarian = () => {
                   </Typography>
                   
                   <AbsenInfo>
-                    <EmployeeName variant="body1">{absen.karyawan.nama_lengkap}</EmployeeName>
+                    <EmployeeName variant="body1">{absen.mahasiswa.nama_lengkap}</EmployeeName>
                     <AbsenTime>
                       <CalendarTodayIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="textSecondary">
@@ -377,8 +377,8 @@ const DataAbsenHarian = () => {
                       <InfoItem>
                         <PersonIcon />
                         <Box>
-                          <Typography variant="subtitle2">Nama Karyawan</Typography>
-                          <Typography variant="body1">{selectedAbsen.karyawan.nama_lengkap}</Typography>
+                          <Typography variant="subtitle2">Nama Mahasiswa</Typography>
+                          <Typography variant="body1">{selectedAbsen.mahasiswa.nama_lengkap}</Typography>
                         </Box>
                       </InfoItem>
                       
@@ -386,7 +386,7 @@ const DataAbsenHarian = () => {
                         <BusinessIcon />
                         <Box>
                           <Typography variant="subtitle2">Nama Cabang</Typography>
-                          <Typography variant="body1">{selectedAbsen.karyawan.Cabang.nama_cabang}</Typography>
+                          <Typography variant="body1">{selectedAbsen.mahasiswa.Cabang.nama}</Typography>
                         </Box>
                       </InfoItem>
                       

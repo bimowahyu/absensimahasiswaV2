@@ -18,12 +18,12 @@ export const FormEditProfile = () => {
   // const [preview, setPreview] = useState('');
   const [message, setMessage] = useState('');
 
-  const { user } = useSelector((state) => state.authKaryawan);
+  const { user } = useSelector((state) => state.authMahasiswa);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`${getApiBaseUrl()}/MeKaryawan`,{withCredentials: true});
+        const response = await axios.get(`${getApiBaseUrl()}/Memahasiswa`,{withCredentials: true});
         setProfile(response.data);
         setName(response.data.nama_lengkap);
         // setPreview(response.data.url);
@@ -48,7 +48,7 @@ export const FormEditProfile = () => {
     // }
 
     try {
-      await axios.put(`${getApiBaseUrl()}/updatebykaryawan/${user.id}`, formData, {
+      await axios.put(`${getApiBaseUrl()}/updatebymahasiswa/${user.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

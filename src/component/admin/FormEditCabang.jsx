@@ -62,7 +62,7 @@ const updateCabang = async (e)=> {
             radius:radius
         },{withCredentials:true});
         console.log(response.data)
-        navigate('/datacabang');
+        navigate('/datalokasi');
     } catch (error) {
         if(error.response){
           setMessage(error.response.data.message);

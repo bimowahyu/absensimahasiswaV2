@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
 import { useNavigate, NavLink } from 'react-router-dom';
 import axios from 'axios'; 
 import moment from 'moment-timezone'; 
@@ -19,15 +18,11 @@ import {
 import { 
   Container, 
   Card, 
-  CardContent, 
   Typography, 
-  Grid, 
   Button, 
   LinearProgress,
   Avatar,
   Box,
-  Paper,
-  Divider,
   CircularProgress
 } from '@mui/material';
 
@@ -38,41 +33,40 @@ const getApiBaseUrl = () => {
 };
 
 export const ClockOut = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // State Variables
-  const [radius, setRadius] = useState(null);
-  const [imageSrc, setImageSrc] = useState('');
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  
-  // Face Recognition States
-  const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [faceDetected, setFaceDetected] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Combined state for better performance
+  const [appState, setAppState] = useState({
+    profileImage: null,
+    namaCabang: '',
+    radius: null,
+    imageSrc: '',
+    latitude: null,
+    longitude: null,
+    modelsLoaded: false,
+    faceDetected: false,
+    isLoading: false,
+    isSubmitting: false,
+    photoTaken: false
+  });
+
+  // Update state helper function
+  const updateState = (newState) => {
+    setAppState(prev => ({...prev, ...newState}));
+  };
   
   // Refs
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const detectTimeoutRef = useRef(null);
   
-  const [profileImage, setProfileImage] = useState(null);
-  const [namaCabang, setNamaCabang] = useState(null)
-  const [photoTaken, setPhotoTaken] = useState(false);
-
-  // Load Face API Models
+  // Load only essential Face API Models
   useEffect(() => {
     const loadModels = async () => {
       try {
-        await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
-          faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-          faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-          faceapi.nets.faceRecognitionNet.loadFromUri('/models')
-        ]);
-        setModelsLoaded(true);
+        // Load only the essential model
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+        updateState({ modelsLoaded: true });
       } catch (error) {
         console.error('Error loading face-api models:', error);
         Swal.fire({
@@ -84,103 +78,116 @@ export const ClockOut = () => {
     };
 
     loadModels();
-  }, []);
-
- useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const response = await axios.get(`${getApiBaseUrl()}/MeKaryawan`, { withCredentials: true });
-        setProfileImage(response.data.url);
-        if (response.data.Cabang && response.data.Cabang.nama_cabang) {
-          setNamaCabang(response.data.Cabang.nama_cabang);
-        } else {
-          const branchResponse = await axios.get(`${getApiBaseUrl()}/cabang`, { withCredentials: true });
-          setNamaCabang(branchResponse.data.name || 'Kantor Pusat');
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-        setNamaCabang('Kantor Pusat');
+    
+    // Cleanup function
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (detectTimeoutRef.current) {
+        clearTimeout(detectTimeoutRef.current);
       }
     };
+  }, []);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await axios.get(`${getApiBaseUrl()}/Memahasiswa`, { withCredentials: true });
+        
+        let branchName = '';
+        if (response.data.Cabang && response.data.Cabang.nama_cabang) {
+          branchName = response.data.Cabang.nama_cabang;
+        } else {
+          try {
+            const branchResponse = await axios.get(`${getApiBaseUrl()}/cabang`, { withCredentials: true });
+            branchName = branchResponse.data.name || '';
+          } catch (branchError) {
+            console.error('Error fetching branch data:', branchError);
+          }
+        }
+        
+        updateState({ 
+          profileImage: response.data.url,
+          namaCabang: branchName
+        });
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+    
     fetchProfileData();
   }, []);
 
-  // Open Camera and Start Face Detection
-  const startCamera = async () => {
-    try {
-      // Stop any existing stream first
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
+  // Camera initialization
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 320 },
+            height: { ideal: 240 },
+            facingMode: 'user',
+            // Lower framerate to reduce CPU usage
+            frameRate: { max: 15 }
+          } 
+        });
       
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 320, height: 240, facingMode: 'user' } 
-      });
-  
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream;
+          
+          // Start face detection once camera is ready
+          if (appState.modelsLoaded) {
+            detectFace();
+          }
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan',
+          text: 'Tidak dapat mengakses kamera. Pastikan izin kamera diaktifkan.',
+        });
       }
-    } catch (error) {
-      console.error('Error accessing camera:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Kesalahan',
-        text: 'Tidak dapat mengakses kamera. Pastikan izin kamera diaktifkan.',
-      });
+    };
+
+    if (appState.modelsLoaded && !appState.photoTaken) {
+      startCamera();
+    }
+  }, [appState.modelsLoaded, appState.photoTaken]);
+
+  // Optimized face detection - run once then only when needed
+  const detectFace = async () => {
+    if (videoRef.current && appState.modelsLoaded && !appState.photoTaken) {
+      try {
+        // Use lighter TinyFaceDetector instead of SSD MobileNet
+        const detections = await faceapi.detectAllFaces(
+          videoRef.current, 
+          new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 })
+        );
+
+        updateState({ faceDetected: detections.length > 0 });
+        
+        // Only schedule next detection if component is still mounted
+        // Use longer interval to reduce CPU load
+        detectTimeoutRef.current = setTimeout(detectFace, 2000);
+      } catch (error) {
+        console.error('Face detection error:', error);
+        detectTimeoutRef.current = setTimeout(detectFace, 3000);
+      }
     }
   };
 
-  useEffect(() => {
-    if (modelsLoaded) {
-      startCamera();
-    }
-  
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [modelsLoaded]);
-
-  // Continuous Face Detection
-  useEffect(() => {
-    let intervalId;
-    const detectFaceContinuously = async () => {
-      if (videoRef.current && modelsLoaded && !photoTaken) {
-        try {
-          const detections = await faceapi
-            .detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options())
-            .withFaceLandmarks()
-            .withFaceDescriptors();
-
-          if (detections.length > 0) {
-            setFaceDetected(true);
-          } else {
-            setFaceDetected(false);
-          }
-        } catch (error) {
-          console.error('Face detection error:', error);
-        }
-      }
-    };
-
-    if (modelsLoaded && !photoTaken) {
-      // Check for face every 5 seconds
-      intervalId = setInterval(detectFaceContinuously, 5000);
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [modelsLoaded, photoTaken]);
-
-  // Take Picture Manually
+  // Take Picture with optimized processing
   const takePicture = async () => {
     try {
-      if (!modelsLoaded || !videoRef.current || !faceDetected) {
+      if (!appState.modelsLoaded || !videoRef.current || !appState.faceDetected) {
         Swal.fire({
           icon: 'warning',
           title: 'Peringatan',
@@ -189,60 +196,76 @@ export const ClockOut = () => {
         return;
       }
 
-      const photo = document.createElement('canvas');
-      const video = videoRef.current;
-      
-      const originalWidth = video.videoWidth;
-      const originalHeight = video.videoHeight;
-      const targetWidth = 400;
-      const targetHeight = (originalHeight / originalWidth) * targetWidth;
+      // Clear detection timeout to save resources
+      if (detectTimeoutRef.current) {
+        clearTimeout(detectTimeoutRef.current);
+      }
 
-      photo.width = targetWidth;
-      photo.height = targetHeight;
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
       
-      const context = photo.getContext('2d');
-      context.drawImage(video, 0, 0, targetWidth, targetHeight);
+      // Optimize canvas size (smaller than original for better performance)
+      canvas.width = 320;
+      canvas.height = 240;
       
-      const compressedImageUrl = photo.toDataURL('image/jpeg', 0.7);
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      // Face Detection on Captured Image
-      const img = new Image();
-      img.src = compressedImageUrl;
+      // Use higher compression for smaller file size
+      const compressedImageUrl = canvas.toDataURL('image/jpeg', 0.6);
       
-      img.onload = async () => {
-        const detections = await faceapi
-          .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks()
-          .withFaceDescriptors();
+      updateState({ 
+        imageSrc: compressedImageUrl,
+        photoTaken: true
+      });
       
-        if (detections.length > 0) {
-          setImageSrc(compressedImageUrl);
-          setPhotoTaken(true);
-          // Get location when picture is taken
-          getLocation();
-        }
-      };
+      // Get location when picture is taken
+      getLocation();
+      
+      // Stop camera stream to save resources
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     } catch (error) {
       console.error('Error taking picture:', error);
     }
   };
 
-  // Retake Picture - Now refreshes the page
+  // Retake Picture
   const retakePicture = () => {
-    // Option 1: Refresh the page to ensure camera is fully reset
-    window.location.reload();
-    
-    // Option 2: If you don't want a full page refresh, uncomment this code instead
-    /*
-    setPhotoTaken(false);
-    setImageSrc('');
-    setFaceDetected(false);
+    // Reset state
+    updateState({
+      photoTaken: false,
+      imageSrc: '',
+      faceDetected: false
+    });
     
     // Need to restart camera
     setTimeout(() => {
-      startCamera();
+      if (appState.modelsLoaded) {
+        const startCamera = async () => {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+              video: { 
+                width: { ideal: 320 },
+                height: { ideal: 240 },
+                facingMode: 'user',
+                frameRate: { max: 15 }
+              } 
+            });
+          
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+              streamRef.current = stream;
+              detectFace();
+            }
+          } catch (error) {
+            console.error('Error restarting camera:', error);
+          }
+        };
+        startCamera();
+      }
     }, 300);
-    */
   };
 
   // Get Location
@@ -250,8 +273,10 @@ export const ClockOut = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
+          updateState({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -276,7 +301,7 @@ export const ClockOut = () => {
   const createAbsensiKeluar = async () => {
     try {
       // Validasi
-      if (!imageSrc) {
+      if (!appState.imageSrc) {
         Swal.fire({
           icon: 'warning',
           title: 'Peringatan',
@@ -285,7 +310,7 @@ export const ClockOut = () => {
         return;
       }
 
-      if (!latitude || !longitude) {
+      if (!appState.latitude || !appState.longitude) {
         Swal.fire({
           icon: 'warning',
           title: 'Peringatan',
@@ -294,13 +319,15 @@ export const ClockOut = () => {
         return;
       }
 
-      setIsLoading(true);
-      setIsSubmitting(true);
+      updateState({ 
+        isLoading: true,
+        isSubmitting: true
+      });
 
-      const response = await axios.post(`${getApiBaseUrl()}/absensi/karyawan/keluar`, {
-        latitude,
-        longitude,
-        image: imageSrc,
+      const response = await axios.post(`${getApiBaseUrl()}/absensi/mahasiswa/keluar`, {
+        latitude: appState.latitude,
+        longitude: appState.longitude,
+        image: appState.imageSrc,
       }, {
         withCredentials: true,
         headers: {
@@ -332,8 +359,10 @@ export const ClockOut = () => {
         });
       }
     } finally {
-      setIsLoading(false);
-      setIsSubmitting(false);
+      updateState({
+        isLoading: false,
+        isSubmitting: false
+      });
     }
   };
 
@@ -342,6 +371,7 @@ export const ClockOut = () => {
     if (coord === null) return "Menunggu...";
     return coord.toFixed(6);
   };
+  
   const getResponsiveHeight = () => {
     return {
       height: 'calc(100vh - 32px)', 
@@ -349,74 +379,79 @@ export const ClockOut = () => {
       minHeight: '500px'  
     };
   };
-    return (
-      <Container 
-        maxWidth="sm" 
-        sx={{ 
-          mt: 2, 
-          mb: 2,
-          width: { xs: '100%', sm: '480px' }, 
-          px: 0 
-        }}
-        disableGutters 
-      >
-        <Card sx={{ 
-          borderRadius: 2, 
-          overflow: 'hidden', 
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          bgcolor: '#121212',
-          width: '100%'
-        }}>
-          {/* Camera/Photo View - Responsive Height */}
-          <Box sx={{ 
-            position: 'relative', 
-            width: '100%',
-            ...getResponsiveHeight(),
-            bgcolor: '#000',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden'
-          }}>
-            {/* Location Header */}
-            <Box sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              zIndex: 10,
-              p: 1.5,
-              bgcolor: 'rgba(0,0,0,0.5)',
-              borderBottom: '1px solid rgba(255,255,255,0.1)',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                {/* Branch Name - Added here */}
-                <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <IoBusinessOutline size={16} />
-                  <span>{namaCabang || 'Loading...'}</span>
-                </Typography>
-                
-                <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <IoLocationOutline size={16} />
-                  <span>{moment().format('DD MMM YYYY HH:mm:ss')}</span>
-                </Typography>
-              </Box>
-              {profileImage ? (
-                <Avatar src={profileImage} alt="Profile" sx={{ width: 32, height: 32, border: '1px solid white' }} />
-              ) : (
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'grey.700', border: '1px solid white' }} />
-              )}
-            </Box>
   
+  return (
+    <Container 
+      maxWidth="sm" 
+      sx={{ 
+        mt: 2, 
+        mb: 2,
+        width: { xs: '100%', sm: '480px' }, 
+        px: 0 
+      }}
+      disableGutters 
+    >
+      <Card sx={{ 
+        borderRadius: 2, 
+        overflow: 'hidden', 
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        bgcolor: '#121212',
+        width: '100%'
+      }}>
+        {/* Camera/Photo View - Responsive Height */}
+        <Box sx={{ 
+          position: 'relative', 
+          width: '100%',
+          ...getResponsiveHeight(),
+          bgcolor: '#000',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden'
+        }}>
+          {/* Location Header */}
+          <Box sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 10,
+            p: 1.5,
+            bgcolor: 'rgba(0,0,0,0.5)',
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Branch Name */}
+              <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <IoBusinessOutline size={16} />
+                <span>{appState.namaCabang || 'Loading...'}</span>
+              </Typography>
+              
+              <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IoTimeOutline size={16} />
+                <span>{moment().format('DD MMM YYYY HH:mm:ss')}</span>
+              </Typography>
+            </Box>
+            
+            {appState.profileImage ? (
+              <Avatar 
+                src={appState.profileImage} 
+                alt="Profile" 
+                sx={{ width: 32, height: 32, border: '1px solid white' }} 
+              />
+            ) : (
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'grey.700', border: '1px solid white' }} />
+            )}
+          </Box>
 
-          {!photoTaken ? (
+          {!appState.photoTaken ? (
             <>
               {/* Live Camera Feed */}
-              {modelsLoaded && (
+              {appState.modelsLoaded && (
                 <video 
                   ref={videoRef} 
                   autoPlay 
@@ -464,7 +499,7 @@ export const ClockOut = () => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  {faceDetected ? (
+                  {appState.faceDetected ? (
                     <IoCheckmarkCircleOutline color="#4CAF50" size={30} />
                   ) : (
                     <IoCloseCircleOutline color="#F44336" size={30} />
@@ -482,7 +517,7 @@ export const ClockOut = () => {
                   py: 0.5
                 }}>
                   <Typography variant="caption" color="white">
-                    {faceDetected ? 'Wajah Terdeteksi' : 'Posisikan Wajah'}
+                    {appState.faceDetected ? 'Wajah Terdeteksi' : 'Posisikan Wajah'}
                   </Typography>
                 </Box>
               </Box>
@@ -490,7 +525,7 @@ export const ClockOut = () => {
           ) : (
             // Captured Photo
             <img 
-              src={imageSrc} 
+              src={appState.imageSrc} 
               alt="Captured" 
               style={{ 
                 width: '100%',
@@ -525,19 +560,19 @@ export const ClockOut = () => {
             }}>
               <Typography variant="caption" color="grey.400">Koordinat:</Typography>
               <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 'medium' }}>
-                {formatCoordinate(latitude)}
+                {formatCoordinate(appState.latitude)}
               </Typography>
               <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 'medium' }}>
-                {formatCoordinate(longitude)}
+                {formatCoordinate(appState.longitude)}
               </Typography>
             </Box>
             
             {/* Center - Action Button */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {!photoTaken ? (
+              {!appState.photoTaken ? (
                 // Capture Button
                 <Button
-                  disabled={!faceDetected}
+                  disabled={!appState.faceDetected}
                   onClick={takePicture}
                   sx={{ 
                     minWidth: 64, 
@@ -546,10 +581,10 @@ export const ClockOut = () => {
                     bgcolor: 'white',
                     '&:hover': { bgcolor: '#f5f5f5' },
                     '&:disabled': { bgcolor: 'grey.700' },
-                    border: faceDetected ? '3px solid #4CAF50' : '3px solid #9e9e9e'
+                    border: appState.faceDetected ? '3px solid #4CAF50' : '3px solid #9e9e9e'
                   }}
                 >
-                  <IoCamera size={32} color={faceDetected ? "#4CAF50" : "#9e9e9e"} />
+                  <IoCamera size={32} color={appState.faceDetected ? "#4CAF50" : "#9e9e9e"} />
                 </Button>
               ) : (
                 // Submit/Retake Buttons
@@ -559,14 +594,14 @@ export const ClockOut = () => {
                     color="error"
                     size="small"
                     onClick={createAbsensiKeluar}
-                    disabled={isLoading || !latitude || !longitude}
+                    disabled={appState.isLoading || !appState.latitude || !appState.longitude}
                     sx={{ 
                       borderRadius: 4,
                       minWidth: 120,
                       position: 'relative'
                     }}
                   >
-                    {isSubmitting ? (
+                    {appState.isSubmitting ? (
                       <>
                         <CircularProgress 
                           size={24} 
@@ -591,7 +626,7 @@ export const ClockOut = () => {
                     color="secondary"
                     size="small"
                     onClick={retakePicture}
-                    disabled={isLoading}
+                    disabled={appState.isLoading}
                     startIcon={<IoRefreshOutline />}
                     sx={{ borderRadius: 4, color: 'white', borderColor: 'white' }}
                   >
@@ -610,20 +645,20 @@ export const ClockOut = () => {
               border: '1px solid rgba(255,255,255,0.2)'
             }}>
               <Lokasi 
-                latitude={latitude} 
-                longitude={longitude} 
-                radius={radius} 
+                latitude={appState.latitude} 
+                longitude={appState.longitude} 
+                radius={appState.radius} 
               />
             </Box>
           </Box>
           
           {/* Loading Bar at Top */}
-          {isLoading && (
+          {appState.isLoading && (
             <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3 }} />
           )}
           
           {/* Full Screen Loading Overlay */}
-          {isSubmitting && (
+          {appState.isSubmitting && (
             <Box sx={{
               position: 'absolute',
               top: 0,
@@ -668,7 +703,7 @@ export const ClockOut = () => {
                 opacity: 0.7, 
                 '&:hover': { opacity: 1 } 
               }}
-              disabled={isLoading}
+              disabled={appState.isLoading}
             >
               Kembali ke Dashboard
             </Button>

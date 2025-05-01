@@ -62,9 +62,9 @@ const fetcher = async (url) => {
   }
 };
 
-// Utility function to calculate working hours and overtime
-const calculateWorkingHours = (jamMasuk, jamKeluar) => {
-  if (!jamMasuk || !jamKeluar) return { totalHours: 0, totalMinutes: 0, overtime: { hours: 0, minutes: 0 } };
+// Utility function to calculate lesson duration
+const calculateLessonDuration = (jamMasuk, jamKeluar) => {
+  if (!jamMasuk || !jamKeluar) return { totalHours: 0, totalMinutes: 0 };
   
   // Parse time strings
   const [inHour, inMinute] = jamMasuk.split(':').map(Number);
@@ -82,21 +82,9 @@ const calculateWorkingHours = (jamMasuk, jamKeluar) => {
   const totalHours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
   
-  // Calculate overtime (if more than 8 hours)
-  let overtimeHours = 0;
-  let overtimeMinutes = 0;
-  
-  // Only consider overtime if total is more than 8 hours and 30 minutes (510 minutes)
-  if (totalMinutes > 510) {
-    const overtimeMinutesTotal = totalMinutes - 510;
-    overtimeHours = Math.floor(overtimeMinutesTotal / 60);
-    overtimeMinutes = overtimeMinutesTotal % 60;
-  }
-  
   return {
     totalHours,
-    totalMinutes: remainingMinutes,
-    overtime: { hours: overtimeHours, minutes: overtimeMinutes }
+    totalMinutes: remainingMinutes
   };
 };
 
@@ -199,11 +187,11 @@ const DataBulan = () => {
   const [tahun, setTahun] = useState('');
   const [fetchData, setFetchData] = useState(false);
   const [warning, setWarning] = useState('');
-  const [expandedCabang, setExpandedCabang] = useState({});
+  const [expandedMatkul, setExpandedMatkul] = useState({});
   const scrollRef = useRef(null);
 
   const { data: absensi, error, isLoading } = useSWR(
-    fetchData ? `${getApiBaseUrl()}/absensicabang/get?bulan=${bulan}&tahun=${tahun}` : null,
+    fetchData ? `${getApiBaseUrl()}/absensibymatkul/get?bulan=${bulan}&tahun=${tahun}` : null,
     fetcher
   );
 
@@ -219,10 +207,10 @@ const DataBulan = () => {
 
   const dates = absensi ? extractDates(absensi) : [];
 
-  const sortedCabangKeys = absensi ? Object.keys(absensi).sort((a, b) => {
-    const cabangA = absensi[a].cabang.nama_cabang.toLowerCase();
-    const cabangB = absensi[b].cabang.nama_cabang.toLowerCase();
-    return cabangA.localeCompare(cabangB);
+  const sortedMatkulKeys = absensi ? Object.keys(absensi).sort((a, b) => {
+    const matkulA = absensi[a].matkul.nama_matkul.toLowerCase();
+    const matkulB = absensi[b].matkul.nama_matkul.toLowerCase();
+    return matkulA.localeCompare(matkulB);
   }) : [];
 
   const handleMonthChange = (e) => {
@@ -240,20 +228,20 @@ const DataBulan = () => {
     }
   };
 
-  const toggleCabangExpand = (cabangId) => {
-    setExpandedCabang(prev => ({
+  const toggleMatkulExpand = (matkulId) => {
+    setExpandedMatkul(prev => ({
       ...prev,
-      [cabangId]: !prev[cabangId]
+      [matkulId]: !prev[matkulId]
     }));
   };
 
-  const handleExportPDF = (cabangId) => {
-    const cabang = absensi[cabangId];
+  const handleExportPDF = (matkulId) => {
+    const matkul = absensi[matkulId];
     const doc = new jsPDF({ orientation: 'landscape' });
     const chunkSize = 5;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text(`Absensi PT.Apalah ${cabang.cabang.nama_cabang}`, 14, 10);
+    doc.text(`Absensi Mata Kuliah ${matkul.matkul.nama_matkul}`, 14, 10);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Periode: ${bulan}/${tahun}`, 14, 18);
@@ -263,53 +251,42 @@ const DataBulan = () => {
       const dateChunk = dates.slice(i, i + chunkSize);
       const headerRow1 = ["Nama", ...dateChunk.map(date => ({
         content: new Date(date).toLocaleDateString('id-ID'),
-        colSpan: 4, // Increased to include work hours and overtime
+        colSpan: 3, // Jam Masuk, Jam Keluar, Durasi
         styles: { halign: 'center' }
       }))];
 
-      const headerRow2 = ["", ...dateChunk.flatMap(() => ["Jam Masuk", "Jam Keluar", "Total Jam", "Lembur"])];
+      const headerRow2 = ["", ...dateChunk.flatMap(() => ["Jam Masuk", "Jam Keluar", "Durasi"])];
       const tableRows = [];
 
-      cabang.absensi.reduce((acc, record) => {
-        const existingRow = acc.find(row => row.nama === record.karyawan.nama_lengkap);
-        if (existingRow) {
-          existingRow.data[record.tgl_absensi] = {
-            jamMasuk: record.jam_masuk || 'Libur',
-            jamKeluar: record.jam_keluar || ''
-          };
-        } else {
-          acc.push({
-            nama: record.karyawan.nama_lengkap,
-            data: {
-              [record.tgl_absensi]: {
-                jamMasuk: record.jam_masuk || 'Libur',
-                jamKeluar: record.jam_keluar || ''
-              }
-            }
-          });
-        }
-        return acc;
-      }, []).forEach(row => {
-        const rowData = [row.nama];
+      // Mendapatkan semua mahasiswa unik yang hadir di mata kuliah ini
+      const mahasiswaSet = new Set();
+      matkul.absensi.forEach(record => {
+        mahasiswaSet.add(record.mahasiswa.nama_lengkap);
+      });
+      
+      // Membuat baris data untuk setiap mahasiswa
+      Array.from(mahasiswaSet).forEach(namaMahasiswa => {
+        const rowData = [namaMahasiswa];
+        
         dateChunk.forEach(date => {
-          const jamMasuk = row.data[date]?.jamMasuk || 'Libur';
-          const jamKeluar = row.data[date]?.jamKeluar || '';
+          // Mencari data absensi untuk mahasiswa ini pada tanggal ini
+          const absensiRecord = matkul.absensi.find(record => 
+            record.mahasiswa.nama_lengkap === namaMahasiswa && 
+            record.tgl_absensi === date
+          );
           
-          // Calculate work hours and overtime
-          let totalJam = '-';
-          let lembur = '-';
+          const jamMasuk = absensiRecord?.jam_masuk || '-';
+          const jamKeluar = absensiRecord?.jam_keluar || '-';
           
-          if (jamMasuk !== 'Libur' && jamKeluar) {
-            const workingTime = calculateWorkingHours(jamMasuk, jamKeluar);
-            totalJam = `${workingTime.totalHours}:${workingTime.totalMinutes.toString().padStart(2, '0')}`;
-            
-            if (workingTime.overtime.hours > 0 || workingTime.overtime.minutes > 0) {
-              lembur = `${workingTime.overtime.hours}:${workingTime.overtime.minutes.toString().padStart(2, '0')}`;
-            }
+          let durasi = '-';
+          if (jamMasuk !== '-' && jamKeluar !== '-') {
+            const durasiData = calculateLessonDuration(jamMasuk, jamKeluar);
+            durasi = `${durasiData.totalHours}:${durasiData.totalMinutes.toString().padStart(2, '0')}`;
           }
           
-          rowData.push(jamMasuk, jamKeluar, totalJam, lembur);
+          rowData.push(jamMasuk, jamKeluar, durasi);
         });
+        
         tableRows.push(rowData);
       });
       
@@ -371,31 +348,28 @@ const DataBulan = () => {
     // Menambahkan spasi kosong untuk tanda tangan
     startYPosition += 25;
     doc.text('_____________', pageWidth - 80, startYPosition);
-    doc.text(' Nama ', pageWidth - 80, startYPosition + 10);
+    doc.text(' Dosen ', pageWidth - 80, startYPosition + 10);
 
     // Menyimpan file PDF
-    doc.save(`export-${cabang.cabang.nama_cabang}-${bulan}-${tahun}.pdf`);
+    doc.save(`export-${matkul.matkul.nama_matkul}-${bulan}-${tahun}.pdf`);
   };
 
-  const handleExportExcel = async (cabangId) => {
+  const handleExportExcel = async (matkulId) => {
     try {
-      // Create enhanced data with work hours and overtime
-      const cabangData = absensi[cabangId];
+      // Create enhanced data with duration
+      const matkulData = absensi[matkulId];
       const enhancedData = {
-        ...cabangData,
-        absensi: cabangData.absensi.map(record => {
-          const workingTime = record.jam_masuk && record.jam_keluar 
-            ? calculateWorkingHours(record.jam_masuk, record.jam_keluar) 
-            : { totalHours: 0, totalMinutes: 0, overtime: { hours: 0, minutes: 0 } };
+        ...matkulData,
+        absensi: matkulData.absensi.map(record => {
+          const duration = record.jam_masuk && record.jam_keluar 
+            ? calculateLessonDuration(record.jam_masuk, record.jam_keluar) 
+            : { totalHours: 0, totalMinutes: 0 };
             
           return {
             ...record,
-            totalJamKerja: record.jam_masuk && record.jam_keluar 
-              ? `${workingTime.totalHours}:${workingTime.totalMinutes.toString().padStart(2, '0')}` 
+            durasi: record.jam_masuk && record.jam_keluar 
+              ? `${duration.totalHours}:${duration.totalMinutes.toString().padStart(2, '0')}` 
               : '-',
-            lembur: (workingTime.overtime.hours > 0 || workingTime.overtime.minutes > 0)
-              ? `${workingTime.overtime.hours}:${workingTime.overtime.minutes.toString().padStart(2, '0')}`
-              : '-'
           };
         })
       };
@@ -409,7 +383,7 @@ const DataBulan = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `export-${absensi[cabangId].cabang.nama_cabang}-${bulan}-${tahun}.xlsx`);
+      link.setAttribute('download', `export-${absensi[matkulId].matkul.nama_matkul}-${bulan}-${tahun}.xlsx`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -442,10 +416,10 @@ const DataBulan = () => {
         }}
       >
         <Typography variant="h5" component="h1" gutterBottom fontWeight={600} color="primary">
-          Data Absensi Bulanan
+          Data Absensi Mata Kuliah
         </Typography>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          Silahkan pilih bulan dan tahun untuk melihat data absensi karyawan
+          Silahkan pilih bulan dan tahun untuk melihat data absensi mahasiswa per mata kuliah
         </Typography>
 
         <DatePickerWrapper>
@@ -505,23 +479,23 @@ const DataBulan = () => {
           </Alert>
         )}
 
-        {sortedCabangKeys.length > 0 && (
+        {sortedMatkulKeys.length > 0 && (
           <Box>
             <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, fontWeight: 500 }}>
               Menampilkan data untuk periode: {bulan}/{tahun}
             </Typography>
             
-            {sortedCabangKeys.map((key) => {
-              const cabang = absensi[key];
-              const isExpanded = expandedCabang[key] !== false; // Default to expanded
+            {sortedMatkulKeys.map((key) => {
+              const matkul = absensi[key];
+              const isExpanded = expandedMatkul[key] !== false; // Default to expanded
               
               return (
                 <SubtleCard key={key}>
                   <CardHeaderStyled
-                    title={cabang.cabang.nama_cabang}
+                    title={`${matkul.matkul.nama_matkul} (${matkul.matkul.hari})`}
                     action={
                       <IconButton 
-                        onClick={() => toggleCabangExpand(key)}
+                        onClick={() => toggleMatkulExpand(key)}
                         sx={{ color: 'white' }}
                       >
                         {isExpanded ? <CaretUp weight="bold" /> : <CaretDown weight="bold" />}
@@ -546,12 +520,12 @@ const DataBulan = () => {
                                   zIndex: 3 
                                 }}
                               >
-                                Nama
+                                Nama Mahasiswa
                               </TableCell>
                               {dates.map(date => (
                                 <TableCell 
                                   key={date} 
-                                  colSpan={4} 
+                                  colSpan={3} 
                                   align="center"
                                   sx={{ 
                                     fontWeight: 'bold',
@@ -597,100 +571,81 @@ const DataBulan = () => {
                                       minWidth: 80
                                     }}
                                   >
-                                    Total Jam
-                                  </TableCell>
-                                  <TableCell 
-                                    align="center"
-                                    sx={{ 
-                                      backgroundColor: theme.palette.primary.lighter || '#e3f2fd',
-                                      color: theme.palette.primary.dark,
-                                      fontWeight: 'medium',
-                                      minWidth: 80
-                                    }}
-                                  >
-                                    Lembur
+                                    Durasi
                                   </TableCell>
                                 </React.Fragment>
                               ))}
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {cabang.absensi.reduce((acc, record) => {
-                              const existingRow = acc.find(row => row.nama === record.karyawan.nama_lengkap);
-                              if (existingRow) {
-                                existingRow.data[record.tgl_absensi] = {
-                                  jamMasuk: record.jam_masuk,
-                                  jamKeluar: record.jam_keluar
-                                };
-                              } else {
-                                acc.push({
-                                  nama: record.karyawan.nama_lengkap,
-                                  data: {
-                                    [record.tgl_absensi]: {
-                                      jamMasuk: record.jam_masuk,
-                                      jamKeluar: record.jam_keluar
-                                    }
-                                  }
-                                });
-                              }
-                              return acc;
-                            }, []).map((row, index) => (
-                              <TableRow key={index} hover sx={{ '&:nth-of-type(odd)': { backgroundColor: theme.palette.action.hover } }}>
-                                <StickyTableCell sx={{ fontWeight: 'medium' }}>
-                                  {row.nama}
-                                </StickyTableCell>
-                                {dates.map(date => {
-                                  const jamMasuk = row.data[date]?.jamMasuk;
-                                  const jamKeluar = row.data[date]?.jamKeluar;
-                                  
-                                  // Calculate working hours and overtime
-                                  const workingTime = jamMasuk && jamKeluar 
-                                    ? calculateWorkingHours(jamMasuk, jamKeluar)
-                                    : { totalHours: 0, totalMinutes: 0, overtime: { hours: 0, minutes: 0 } };
-                                  
-                                  return (
-                                    <React.Fragment key={date}>
-                                      <TableCell align="center">
-                                        {jamMasuk || (
-                                          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                            Libur
-                                          </Typography>
-                                        )}
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        {jamKeluar || (
-                                          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                            -
-                                          </Typography>
-                                        )}
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        {jamMasuk && jamKeluar ? (
-                                          <Typography variant="body2" color="text.primary">
-                                            {`${workingTime.totalHours}:${workingTime.totalMinutes.toString().padStart(2, '0')}`}
-                                          </Typography>
-                                        ) : (
-                                          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                            -
-                                          </Typography>
-                                        )}
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        {(workingTime.overtime.hours > 0 || workingTime.overtime.minutes > 0) ? (
-                                          <Typography variant="body2" color="error.main" sx={{ fontWeight: 'medium' }}>
-                                            {`${workingTime.overtime.hours}:${workingTime.overtime.minutes.toString().padStart(2, '0')}`}
-                                          </Typography>
-                                        ) : (
-                                          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                            -
-                                          </Typography>
-                                        )}
-                                      </TableCell>
-                                    </React.Fragment>
-                                  );
-                                })}
-                              </TableRow>
-                            ))}
+                            {/* Mendapatkan daftar mahasiswa unik */}
+                            {(() => {
+                              // Kumpulkan semua mahasiswa yang ada dalam absensi mata kuliah ini
+                              const mahasiswaMap = {};
+                              
+                              matkul.absensi.forEach(record => {
+                                const mahasiswaId = record.mahasiswa.id;
+                                if (!mahasiswaMap[mahasiswaId]) {
+                                  mahasiswaMap[mahasiswaId] = record.mahasiswa;
+                                }
+                              });
+                              
+                              // Konversi map ke array dan urutkan berdasarkan nama
+                              return Object.values(mahasiswaMap)
+                                .sort((a, b) => a.nama_lengkap.localeCompare(b.nama_lengkap))
+                                .map((mahasiswa, index) => (
+                                  <TableRow key={index} hover sx={{ '&:nth-of-type(odd)': { backgroundColor: theme.palette.action.hover } }}>
+                                    <StickyTableCell sx={{ fontWeight: 'medium' }}>
+                                      {mahasiswa.nama_lengkap}
+                                    </StickyTableCell>
+                                    
+                                    {dates.map(date => {
+                                      // Cari data absensi untuk mahasiswa ini pada tanggal tersebut
+                                      const absensiData = matkul.absensi.find(
+                                        a => a.mahasiswa.id === mahasiswa.id && a.tgl_absensi === date
+                                      );
+                                      
+                                      const jamMasuk = absensiData?.jam_masuk;
+                                      const jamKeluar = absensiData?.jam_keluar;
+                                      
+                                      // Hitung durasi jika ada jam masuk dan keluar
+                                      const durasiData = jamMasuk && jamKeluar 
+                                        ? calculateLessonDuration(jamMasuk, jamKeluar)
+                                        : null;
+                                        
+                                      return (
+                                        <React.Fragment key={date}>
+                                          <TableCell align="center">
+                                            {jamMasuk || (
+                                              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                                -
+                                              </Typography>
+                                            )}
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            {jamKeluar || (
+                                              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                                -
+                                              </Typography>
+                                            )}
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            {durasiData ? (
+                                              <Typography variant="body2" color="text.primary">
+                                                {`${durasiData.totalHours}:${durasiData.totalMinutes.toString().padStart(2, '0')}`}
+                                              </Typography>
+                                            ) : (
+                                              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                                -
+                                              </Typography>
+                                            )}
+                                          </TableCell>
+                                        </React.Fragment>
+                                      );
+                                    })}
+                                  </TableRow>
+                                ));
+                            })()}
                           </TableBody>
                         </Table>
                       </StyledTableContainer>

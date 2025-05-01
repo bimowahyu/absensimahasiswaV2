@@ -38,6 +38,7 @@ export const Sidebar = () => {
   
   const auth = useSelector((state) => state.authAdmin || {});
   const user = auth.user || null;
+  const isDosen = user?.role === "dosen";
   const sidebarRef = useRef(null);
   
   // Initialize menu state from localStorage or with all menus closed by default
@@ -166,69 +167,165 @@ export const Sidebar = () => {
     },
   };
 
-  // Grouped menu items
-  const menuGroups = [
+  const menuGroups = isDosen
+  ? [
     {
       title: "Dashboard",
-      icon: <Dashboard fontSize="small" sx={{ mr: 1.5 }} />,
-      to: "/DashboardAdmin",
+      icon: <CalendarMonth fontSize="small" sx={{ mr: 1.5 }} />,
+      to: "/dashboarddosen",
       type: "single"
     },
-    {
-      title: "Absensi",
-      icon: <CalendarMonth fontSize="small" sx={{ mr: 1.5 }} />,
-      key: "absensi",
-      type: "dropdown",
-      items: [
-        { to: "/data/bulanan", text: "Data Bulanan" },
-        { to: "/data", text: "Data Absensi" },
-        { to: "/absenmanual", text: "Absensi Manual" },
-        { to: "/editdata", text: "Edit Absensi" },
-      ]
-    },
-    {
-      title: "Penggajian",
-      icon: <AttachMoney fontSize="small" sx={{ mr: 1.5 }} />,
-      key: "penggajian",
-      type: "dropdown",
-      items: [
-        { to: "/datagaji", text: "Data Penggajian" },
-        { to: "/datagajicabang", text: "Export Data Gaji" },
-        { to: "/creategaji", text: "Create Penggajian" },
-      ]
-    },
-    {
-      title: "Cabang",
-      icon: <Business fontSize="small" sx={{ mr: 1.5 }} />,
-      key: "cabang",
-      type: "dropdown",
-      items: [
-        { to: "/datacabang", text: "Data Cabang" },
-        { to: "/datacabang/tambah", text: "Tambah Data Cabang" },
-      ]
-    },
-    {
-      title: "Karyawan",
-      icon: <People fontSize="small" sx={{ mr: 1.5 }} />,
-      key: "karyawan",
-      type: "dropdown",
-      items: [
-        { to: "/datakaryawan", text: "Data Karyawan" },
-        { to: "/karyawan/tambah", text: "Tambah Data Karyawan" },
-        // { to: "/karyawan/edit", text: "Edit Data Karyawan" },
-      ]
-    },
-    {
-      title: "Admin",
-      icon: <AdminPanelSettings fontSize="small" sx={{ mr: 1.5 }} />,
-      key: "admin",
-      type: "dropdown",
-      items: [
-        { to: "/admin", text: "Profile Admin" },
-        { to: "/admin/data", text: "Admin List" },
-      ]
-    },
-  ];
+      {
+        title: "Presensi Matkul",
+        icon: <CalendarMonth fontSize="small" sx={{ mr: 1.5 }} />,
+        to: "/presensi-matkul",
+        type: "single"
+      }
+    ]
+  : [
+      {
+        title: "Dashboard",
+        icon: <Dashboard fontSize="small" sx={{ mr: 1.5 }} />,
+        to: "/DashboardAdmin",
+        type: "single"
+      },
+      {
+        title: "Absensi",
+        icon: <CalendarMonth fontSize="small" sx={{ mr: 1.5 }} />,
+        key: "absensi",
+        type: "dropdown",
+        items: [
+          { to: "/data/bulanan", text: "Data Bulanan" },
+          // { to: "/data", text: "Data Absensi" },
+          { to: "/absenmanual", text: "Absensi Manual" },
+          { to: "/editdata", text: "Edit Absensi" },
+        ]
+      },
+      {
+        title: "Matkul",
+        icon: <AttachMoney fontSize="small" sx={{ mr: 1.5 }} />,
+        key: "matkul",
+        type: "dropdown",
+        items: [
+          { to: "/datamatkul", text: "Data Matkul" },
+          { to: "/settingabsensimatkul", text: "Setting Presensi Matkul" },
+        ]
+      },
+      {
+        title: "Management Dosen",
+        icon: <AttachMoney fontSize="small" sx={{ mr: 1.5 }} />,
+        key: "dosen",
+        type: "dropdown",
+        items: [
+          { to: "/datadosen", text: "Data Dosen" },
+          // { to: "/datadosen/tambah", text: "Create Dosen" },
+        ]
+      },
+      {
+        title: "Lokasi Presensi",
+        icon: <Business fontSize="small" sx={{ mr: 1.5 }} />,
+        key: "lokasi presensi",
+        type: "dropdown",
+        items: [
+          { to: "/datalokasi", text: "Data Lokasi Presensi" },
+          { to: "/datalokasi/tambah", text: "Tambah Lokasi" },
+        ]
+      },
+      {
+        title: "Mahasiswa",
+        icon: <People fontSize="small" sx={{ mr: 1.5 }} />,
+        key: "Mahasiswa",
+        type: "dropdown",
+        items: [
+          { to: "/datamahasiswa", text: "Data Mahasiswa" },
+          { to: "/mahasiswa/tambah", text: "Tambah Mahasiswa" },
+        ]
+      },
+      {
+        title: "Admin",
+        icon: <AdminPanelSettings fontSize="small" sx={{ mr: 1.5 }} />,
+        key: "admin",
+        type: "dropdown",
+        items: [
+          { to: "/admin", text: "Profile Admin" },
+          { to: "/admin/data", text: "Admin List" },
+        ]
+      },
+    ];
+
+  // const menuGroups = [
+  //   {
+  //     title: "Dashboard",
+  //     icon: <Dashboard fontSize="small" sx={{ mr: 1.5 }} />,
+  //     to: "/DashboardAdmin",
+  //     type: "single"
+  //   },
+  //   {
+  //     title: "Absensi",
+  //     icon: <CalendarMonth fontSize="small" sx={{ mr: 1.5 }} />,
+  //     key: "absensi",
+  //     type: "dropdown",
+  //     items: [
+  //       { to: "/data/bulanan", text: "Data Bulanan" },
+  //       { to: "/data", text: "Data Absensi" },
+  //       { to: "/absenmanual", text: "Absensi Manual" },
+  //       { to: "/editdata", text: "Edit Absensi" },
+  //     ]
+  //   },
+  //   {
+  //     title: "Matkul",
+  //     icon: <AttachMoney fontSize="small" sx={{ mr: 1.5 }} />,
+  //     key: "matkul",
+  //     type: "dropdown",
+  //     items: [
+  //       { to: "/datamatkul", text: "Data Matkul" },
+  //       { to: "/datamatkul/tambah", text: "Create Matkul" },
+  //       // { to: "/creategaji", text: "Create Penggajian" },
+  //     ]
+  //   },
+  //   {
+  //     title: "Management Dosen",
+  //     icon: <AttachMoney fontSize="small" sx={{ mr: 1.5 }} />,
+  //     key: "dosen",
+  //     type: "dropdown",
+  //     items: [
+  //       { to: "/datadosen", text: "Data Dosen" },
+  //       // { to: "/datagajicabang", text: "Export Data Gaji" },
+  //       { to: "/datadosen/tambah", text: "Create Dosen" },
+  //     ]
+  //   },
+  //   {
+  //     title: "Lokasi Presensi",
+  //     icon: <Business fontSize="small" sx={{ mr: 1.5 }} />,
+  //     key: "lokasi presensi",
+  //     type: "dropdown",
+  //     items: [
+  //       { to: "/datalokasi", text: "Data Lokasi Presensi" },
+  //       { to: "/datalokasi/tambah", text: "Tambah Data Lokasi Presensi" },
+  //     ]
+  //   },
+  //   {
+  //     title: "Mahasiswa",
+  //     icon: <People fontSize="small" sx={{ mr: 1.5 }} />,
+  //     key: "Mahasiswa",
+  //     type: "dropdown",
+  //     items: [
+  //       { to: "/datamahasiswa", text: "Data Mahasiswa" },
+  //       { to: "/mahasiswa/tambah", text: "Tambah Data Mahasiswa" },
+  //       // { to: "/karyawan/edit", text: "Edit Data Karyawan" },
+  //     ]
+  //   },
+  //   {
+  //     title: "Admin",
+  //     icon: <AdminPanelSettings fontSize="small" sx={{ mr: 1.5 }} />,
+  //     key: "admin",
+  //     type: "dropdown",
+  //     items: [
+  //       { to: "/admin", text: "Profile Admin" },
+  //       { to: "/admin/data", text: "Admin List" },
+  //     ]
+  //   },
+  // ];
 
   const dropdownVariants = {
     hidden: { opacity: 0, height: 0, overflow: "hidden" },
@@ -310,7 +407,7 @@ export const Sidebar = () => {
           }}
         >
           Sistem Informasi Absensi <br />
-          Dan Penggajian
+          Mahasiswa
         </Typography>
       </Box>
 

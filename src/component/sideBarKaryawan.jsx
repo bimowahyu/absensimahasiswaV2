@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {IoStorefrontOutline, IoPerson, IoPricetag, IoHome, IoLogOut } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
-import { LogOut, reset } from "../fitur/AuthKaryawan";
+import { LogOut, reset } from "../fitur/AuthMahasiswa";
 import axios from "axios";
 import "../app/Side.css"
 
 const Sidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.authKaryawan);
+  const { user } = useSelector((state) => state.authMahasiswa);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dataKaryawan, setDataKaryawan] = useState(null);
   const [error, setError] = useState(null);
@@ -18,7 +18,7 @@ const Sidebar = () => {
     const fetchProfile = async () => {
         try {
             // Panggil fungsi getMe untuk mendapatkan data karyawan yang sedang login
-            const response = await axios.get('http://localhost:5000/MeKaryawan'); // Harap perhatikan bahwa getMe harus mengembalikan data karyawan yang sedang login
+            const response = await axios.get('http://localhost:5000/Memahasiswa'); // Harap perhatikan bahwa getMe harus mengembalikan data karyawan yang sedang login
             setDataKaryawan(response.data); // Simpan data karyawan ke dalam state
         } catch (error) {
             setError(error.message); // Tangani kesalahan jika terjadi
