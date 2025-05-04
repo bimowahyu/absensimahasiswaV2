@@ -103,7 +103,7 @@ const ProfileKaryawan = () => {
                                </Button>
                            </Grid>
                            <Grid item xs={6}>
-                               <Button component={NavLink} to="/editprofilekaryawan" variant="contained" fullWidth>
+                               <Button component={NavLink} to="/editprofile" variant="contained" fullWidth>
                                   Edit Profile
                                </Button>
                            </Grid>

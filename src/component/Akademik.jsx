@@ -241,7 +241,7 @@ export const Akademik = () => {
                                                         variant="contained" 
                                                         size="small"
                                                         component={NavLink}
-                                                        to={`/presensi/${course.id}`}
+                                                        to={`/dashboard`}
                                                         disabled={courseStatus.status === "Selesai" || courseStatus.status === "Belum Dimulai"}
                                                     >
                                                         Presensi
@@ -279,18 +279,11 @@ export const Akademik = () => {
                         {kursus.map((course) => (
                             <Grid item xs={12} sm={6} md={4} key={course.id}>
                                 <Card sx={{ borderRadius: 2, height: '100%' }}>
-                                    {/* <CardHeader
+                                    <CardHeader
                                         title={course.nama_matkul}
                                         subheader={`Hari ${course.hari.charAt(0).toUpperCase() + course.hari.slice(1)}`}
-                                        action={
-                                            <Chip 
-                                                label={`ID: ${course.id}`} 
-                                                color="primary" 
-                                                size="small"
-                                                variant="outlined" 
-                                            />
-                                        }
-                                    /> */}
+                                       
+                                    />
                                     <Divider />
                                     <CardContent>
                                         <Box sx={{ mb: 2 }}>

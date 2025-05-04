@@ -22,7 +22,8 @@ import {
   Business, 
   People, 
   Person, 
-  AdminPanelSettings 
+  AdminPanelSettings,
+  Book
 } from "@mui/icons-material";
 import { LogOutAdmin, reset } from "../../fitur/AuthSlice";
 import { Collapse, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
@@ -203,7 +204,7 @@ export const Sidebar = () => {
       },
       {
         title: "Matkul",
-        icon: <AttachMoney fontSize="small" sx={{ mr: 1.5 }} />,
+        icon: <Book fontSize="small" sx={{ mr: 1.5 }} />,
         key: "matkul",
         type: "dropdown",
         items: [
@@ -213,7 +214,7 @@ export const Sidebar = () => {
       },
       {
         title: "Management Dosen",
-        icon: <AttachMoney fontSize="small" sx={{ mr: 1.5 }} />,
+        icon: <Person fontSize="small" sx={{ mr: 1.5 }} />,
         key: "dosen",
         type: "dropdown",
         items: [

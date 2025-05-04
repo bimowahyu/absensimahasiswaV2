@@ -49,7 +49,7 @@ export const Navbar = () => {
           {user && user.role === "admin" && (
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
               <Tooltip title="User List">
-                <Link to="/datakaryawan" style={{ textDecoration: 'none' }}>
+                <Link to="/datamahasiswa" style={{ textDecoration: 'none' }}>
                   <IconButton size="small">
                     <UsersIcon size={20} />
                   </IconButton>

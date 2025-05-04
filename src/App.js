@@ -73,7 +73,7 @@ function App() {
         <Route path="/data/bulanan" element={<DataBulanPages />} /> 
         <Route path="/admin/edit/:id" element={<EditProfilePages />} />
         <Route path="/dataadmin/edit/:id" element={<FormEditAdminPages />} />
-        <Route path="/editprofilekaryawan" element={<EditprofileKaryawanPages />} />
+        <Route path="/editprofile" element={<EditprofileKaryawanPages />} />
         <Route path="/presensi-matkul" element={<RekapAbsenDosenPages />}/>
         <Route path="/datamatkul" element={<MatkulPages />} /> 
         <Route path="/settingabsensimatkul" element={<SettingAbsensiMatkulPages />} /> 
