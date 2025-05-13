@@ -73,10 +73,10 @@ const Sidebar = () => {
               <NavLink to="/datalokasi/tambah"><IoPricetag /> Tambah Data Cabang</NavLink>
             </li>
             <li>
-              <NavLink to="/datamahasiswa"><IoAccessibilityOutline /> Data Karyawan</NavLink>
+              <NavLink to="/datamahasiswa"><IoAccessibilityOutline /> Data Mahasiswa</NavLink>
             </li>
             <li>
-              <NavLink to="/mahasiswa/tambah"><IoDuplicateOutline /> Tambah Data Karyawan</NavLink>
+              <NavLink to="/mahasiswa/tambah"><IoDuplicateOutline /> Tambah Data Mahasiswa</NavLink>
             </li>
           </ul>
           <p className="menu-label">Settings</p>

@@ -27,9 +27,9 @@ const AbsensiChart = () => {
   if (error) return <div>Silahkan refresh</div>;
   if (!data) return <div>Loading...</div>;
 
-  const chartData = Object.keys(data).map(karyawanId => ({
-    name: data[karyawanId].nama_lengkap,
-    kehadiran: data[karyawanId].kehadiran
+  const chartData = Object.keys(data).map(mahasiswaId => ({
+    name: data[mahasiswaId].nama_lengkap,
+    kehadiran: data[mahasiswaId].kehadiran
   }));
 
   return (

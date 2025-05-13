@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 // import Login from "./component/loginAdmin";
-import LoginKaryawan from "./component/loginKaryawan";
-import { DashboardKaryawanPages } from "./pages/DashboardPages";
+import Login from "./component/Login";
+import { DashboardMahasiswaPages } from "./pages/DashboardPages";
 import { CreateAbsenPages } from "./pages/CreateAbsenPages";
 import { ClockOutPages } from "./pages/ClockoutPages";
 import { GetAbsen } from "./pages/GetAbsen";
@@ -14,7 +14,7 @@ import { DataMahasiswaPages } from "./pages/adminpages/DataMahasiswaPages";
 import { CreateMahasiswaPages } from "./pages/adminpages/CreateMahasiswaPages";
 import { ProfileAdminPages } from "./pages/adminpages/ProfileAdminPages";
 import { EditProfilePages } from "./pages/adminpages/EditProfilePages";
-import { EditprofileKaryawanPages } from "./pages/EditprofileKaryawanPages";
+import { EditprofileMahasiswaPages } from "./pages/EditprofileMahasiswaPages";
 import  DataPages  from "./pages/adminpages/DataPages";
 import { KehadiranBulanPages } from "./pages/KehadiranBulanPages";
 import DataBulanPages from "./pages/adminpages/DataBulanPages";
@@ -46,11 +46,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes> 
-        <Route path="/" element={<LoginKaryawan />} />
+        <Route path="/" element={<Login />} />
         {/* <Route path="/loginadmin" element={<Login />} /> */}
         <Route path="/datalokasi" element={<CabangPages />} />
         {/* <Route path="/dashboard" element={<PrivateRoute element={<DashboardKaryawanPages />} />} /> */}
-        <Route path="/dashboard" element={<DashboardKaryawanPages />} />
+        <Route path="/dashboard" element={<DashboardMahasiswaPages />} />
 
         <Route path="/dashboarddosen" element={<DashboardDosenPages />} />
 
@@ -61,7 +61,7 @@ function App() {
         <Route path="/mahasiswa/tambah" element={<CreateMahasiswaPages />} />
         <Route path="/datamahasiswa/edit/:id" element={<EditMahasiswaPages />} />
         <Route path="/DashboardAdmin" element={<Dashboard />} />
-        <Route path="/dashboard" element={<DashboardKaryawanPages />}/>
+        <Route path="/dashboard" element={<DashboardMahasiswaPages />}/>
         <Route path="/createabsen" element={<CreateAbsenPages />} />
         <Route path="/GetAbsen" element={<GetAbsen />} />
         <Route path="/GetAbsenBulan" element={<KehadiranBulanPages />} />
@@ -73,7 +73,7 @@ function App() {
         <Route path="/data/bulanan" element={<DataBulanPages />} /> 
         <Route path="/admin/edit/:id" element={<EditProfilePages />} />
         <Route path="/dataadmin/edit/:id" element={<FormEditAdminPages />} />
-        <Route path="/editprofile" element={<EditprofileKaryawanPages />} />
+        <Route path="/editprofile" element={<EditprofileMahasiswaPages />} />
         <Route path="/presensi-matkul" element={<RekapAbsenDosenPages />}/>
         <Route path="/datamatkul" element={<MatkulPages />} /> 
         <Route path="/settingabsensimatkul" element={<SettingAbsensiMatkulPages />} /> 

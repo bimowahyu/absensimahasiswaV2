@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { getMe } from "../fitur/AuthMahasiswa";
 import  Dashboard  from "../component/Dashboard";
 
-export const DashboardKaryawanPages = () => {
+export const DashboardMahasiswaPages = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isError } = useSelector((state) => state.authMahasiswa);

@@ -29,7 +29,7 @@ const getApiBaseUrl = () => {
 
 const fetcher = url => axios.get(url).then(res => res.data);
 
-export const LoginKaryawan = () => {
+export const Login = () => {
   // Tab state
   const [activeTab, setActiveTab] = useState(0);
   
@@ -315,4 +315,4 @@ export const LoginKaryawan = () => {
   );
 };
 
-export default LoginKaryawan;
+export default Login;

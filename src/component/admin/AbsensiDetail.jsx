@@ -78,23 +78,23 @@ const AbsensiDetail = () => {
 
   const formattedData = [];
 
-  data.forEach((karyawanData, karyawanIndex) => {
-    karyawanData.absensi.forEach((absensi, absensiIndex) => {
+  data.forEach((mahasiswaData, mahasiswaIndex) => {
+    mahasiswaData.absensi.forEach((absensi, absensiIndex) => {
       const tanggal = absensi.tanggal ? new Date(absensi.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
       formattedData.push({
-        id: `${karyawanIndex + 1}-${absensiIndex + 1}`,
-        karyawan: karyawanData.nama || '',
+        id: `${mahasiswaIndex + 1}-${absensiIndex + 1}`,
+        mahasiswa: mahasiswaData.nama || '',
         // tanggal: absensi.tanggal || '',
         tanggal: tanggal,
         jam_masuk: absensi.jam_masuk || '',
         jam_keluar: absensi.jam_keluar || '',
-        cabang: karyawanData.cabang || 'N/A' 
+        cabang: mahasiswaData.cabang || 'N/A' 
       });
     });
   });
 
   const filteredData = formattedData.filter(absensi => 
-    (absensi.karyawan && absensi.karyawan.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (absensi.mahasiswa && absensi.mahasiswa.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (absensi.tanggal && absensi.tanggal.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (absensi.cabang && absensi.cabang.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -103,7 +103,7 @@ const AbsensiDetail = () => {
     <div>
       <SearchInput 
         type="text" 
-        placeholder="Cari karyawan, tanggal, atau cabang..." 
+        placeholder="Cari Mahasiswa, tanggal, atau cabang..." 
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
@@ -112,7 +112,7 @@ const AbsensiDetail = () => {
           <thead>
             <tr>
               <TableHeader>No</TableHeader>
-              <TableHeader>Karyawan</TableHeader>
+              <TableHeader>Mahasiswa</TableHeader>
               <TableHeader>Tanggal</TableHeader>
               <TableHeader>Jam Masuk</TableHeader>
               <TableHeader>Jam Keluar</TableHeader>
@@ -123,7 +123,7 @@ const AbsensiDetail = () => {
             {filteredData.map((absensi, index) => (
               <TableRow key={absensi.id}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{absensi.karyawan}</TableCell>
+                <TableCell>{absensi.mahasiswa}</TableCell>
                 <TableCell>{absensi.tanggal}</TableCell>
                 <TableCell>{absensi.jam_masuk ? absensi.jam_masuk : "Tidak Presensi"}</TableCell>
                 <TableCell>{absensi.jam_keluar ? absensi.jam_keluar : "Belum absen keluar"}</TableCell>

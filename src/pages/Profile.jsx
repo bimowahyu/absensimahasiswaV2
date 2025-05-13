@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getMe } from "../fitur/AuthMahasiswa";
-import ProfileKaryawan from "../component/ProfileKaryawan";
+import ProfileMahasiswa from "../component/ProfileMahasiswa";
 
 export const Profile = () => {
     const dispatch = useDispatch();
@@ -20,7 +20,7 @@ export const Profile = () => {
     }, [isError, navigate]);
   return (
    
-        <ProfileKaryawan />
+        <ProfileMahasiswa />
       
   )
 }

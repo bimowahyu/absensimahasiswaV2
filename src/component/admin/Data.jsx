@@ -327,7 +327,7 @@ const Data = () => {
               
                // Prepare data for rendering
                const employeeData = cabang.absensi.reduce((acc, record) => {
-                 const existingRow = acc.find(row => row.nama === record.karyawan.nama_lengkap);
+                 const existingRow = acc.find(row => row.nama === record.mahasiswa.nama_lengkap);
                  if (existingRow) {
                    existingRow.data[record.tgl_absensi] = {
                      jamMasuk: record.jam_masuk,
@@ -337,7 +337,7 @@ const Data = () => {
                    };
                  } else {
                    acc.push({
-                     nama: record.karyawan.nama_lengkap,
+                     nama: record.mahasiswa.nama_lengkap,
                      data: {
                        [record.tgl_absensi]: {
                          jamMasuk: record.jam_masuk,

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getMe } from "../fitur/AuthMahasiswa";
 
-export const EditprofileKaryawanPages = () => {
+export const EditprofileMahasiswaPages = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isError } = useSelector((state) => state.authMahasiswa);
