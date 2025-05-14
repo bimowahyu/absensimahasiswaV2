@@ -234,125 +234,124 @@ const DataBulan = () => {
       [matkulId]: !prev[matkulId]
     }));
   };
+const handleExportPDF = (matkulId) => {
+  const matkul = absensi[matkulId];
+  const doc = new jsPDF({ orientation: 'landscape' });
+  const chunkSize = 5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text(`Absensi Mata Kuliah ${matkul.matkul.nama_matkul}`, 14, 10);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Periode: ${bulan}/${tahun}`, 14, 18);
+  let startYPosition = 25;
+  
+  for (let i = 0; i < dates.length; i += chunkSize) {
+    const dateChunk = dates.slice(i, i + chunkSize);
+    const headerRow1 = ["Nama", ...dateChunk.map(date => ({
+      content: new Date(date).toLocaleDateString('id-ID'),
+      colSpan: 4, // Jam Masuk, Jam Keluar, Durasi, Status
+      styles: { halign: 'center' }
+    }))];
 
-  const handleExportPDF = (matkulId) => {
-    const matkul = absensi[matkulId];
-    const doc = new jsPDF({ orientation: 'landscape' });
-    const chunkSize = 5;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text(`Absensi Mata Kuliah ${matkul.matkul.nama_matkul}`, 14, 10);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Periode: ${bulan}/${tahun}`, 14, 18);
-    let startYPosition = 25;
-    
-    for (let i = 0; i < dates.length; i += chunkSize) {
-      const dateChunk = dates.slice(i, i + chunkSize);
-      const headerRow1 = ["Nama", ...dateChunk.map(date => ({
-        content: new Date(date).toLocaleDateString('id-ID'),
-        colSpan: 3, // Jam Masuk, Jam Keluar, Durasi
-        styles: { halign: 'center' }
-      }))];
+    const headerRow2 = ["", ...dateChunk.flatMap(() => ["Jam Masuk", "Jam Keluar", "Durasi", "Status"])];
+    const tableRows = [];
 
-      const headerRow2 = ["", ...dateChunk.flatMap(() => ["Jam Masuk", "Jam Keluar", "Durasi"])];
-      const tableRows = [];
-
-      // Mendapatkan semua mahasiswa unik yang hadir di mata kuliah ini
-      const mahasiswaSet = new Set();
-      matkul.absensi.forEach(record => {
-        mahasiswaSet.add(record.mahasiswa.nama_lengkap);
-      });
-      
-      // Membuat baris data untuk setiap mahasiswa
-      Array.from(mahasiswaSet).forEach(namaMahasiswa => {
-        const rowData = [namaMahasiswa];
-        
-        dateChunk.forEach(date => {
-          // Mencari data absensi untuk mahasiswa ini pada tanggal ini
-          const absensiRecord = matkul.absensi.find(record => 
-            record.mahasiswa.nama_lengkap === namaMahasiswa && 
-            record.tgl_absensi === date
-          );
-          
-          const jamMasuk = absensiRecord?.jam_masuk || '-';
-          const jamKeluar = absensiRecord?.jam_keluar || '-';
-          
-          let durasi = '-';
-          if (jamMasuk !== '-' && jamKeluar !== '-') {
-            const durasiData = calculateLessonDuration(jamMasuk, jamKeluar);
-            durasi = `${durasiData.totalHours}:${durasiData.totalMinutes.toString().padStart(2, '0')}`;
-          }
-          
-          rowData.push(jamMasuk, jamKeluar, durasi);
-        });
-        
-        tableRows.push(rowData);
-      });
-      
-      if (startYPosition + 10 > doc.internal.pageSize.height - 30) {
-        doc.addPage();
-        startYPosition = 20;
-      }
-      
-      doc.autoTable({
-        head: [headerRow1, headerRow2],
-        body: tableRows,
-        startY: startYPosition,
-        theme: 'grid',
-        styles: {
-          fontSize: 8, // reduced font size to fit more columns
-        },
-        headStyles: {
-          fillColor: [66, 139, 202],
-          textColor: [255, 255, 255],
-          halign: 'center',
-          valign: 'middle',
-          lineWidth: 0.5,
-          lineColor: [220, 220, 220]
-        },
-        bodyStyles: {
-          lineWidth: 0.5,
-          lineColor: [220, 220, 220]
-        },
-        alternateRowStyles: {
-          fillColor: [245, 245, 245]
-        }
-      });
-
-      // Update posisi Y untuk tabel berikutnya
-      startYPosition = doc.previousAutoTable.finalY + 10;
-    }
-
-    // Lebar halaman
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    // Tambahkan teks untuk tanggal dan tanda tangan setelah semua data
-    const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
+    // Mendapatkan semua mahasiswa unik yang hadir di mata kuliah ini
+    const mahasiswaSet = new Set();
+    matkul.absensi.forEach(record => {
+      mahasiswaSet.add(record.mahasiswa.nama_lengkap);
     });
-
-    // Cek jika butuh halaman baru untuk tanda tangan
-    if (startYPosition + 50 > doc.internal.pageSize.height - 30) {
+    
+    // Membuat baris data untuk setiap mahasiswa
+    Array.from(mahasiswaSet).forEach(namaMahasiswa => {
+      const rowData = [namaMahasiswa];
+      
+      dateChunk.forEach(date => {
+        // Mencari data absensi untuk mahasiswa ini pada tanggal ini
+        const absensiRecord = matkul.absensi.find(record => 
+          record.mahasiswa.nama_lengkap === namaMahasiswa && 
+          record.tgl_absensi === date
+        );
+        
+        const jamMasuk = absensiRecord?.jam_masuk || '-';
+        const jamKeluar = absensiRecord?.jam_keluar || '-';
+        const status = absensiRecord?.status || '-';
+        let durasi = '-';
+        if (jamMasuk !== '-' && jamKeluar !== '-') {
+          const durasiData = calculateLessonDuration(jamMasuk, jamKeluar);
+          durasi = `${durasiData.totalHours}:${durasiData.totalMinutes.toString().padStart(2, '0')}`;
+        }
+        
+        rowData.push(jamMasuk, jamKeluar, durasi, status);
+      });
+      
+      tableRows.push(rowData);
+    });
+    
+    if (startYPosition + 10 > doc.internal.pageSize.height - 30) {
       doc.addPage();
       startYPosition = 20;
     }
+    
+    doc.autoTable({
+      head: [headerRow1, headerRow2],
+      body: tableRows,
+      startY: startYPosition,
+      theme: 'grid',
+      styles: {
+        fontSize: 8, // reduced font size to fit more columns
+      },
+      headStyles: {
+        fillColor: [66, 139, 202],
+        textColor: [255, 255, 255],
+        halign: 'center',
+        valign: 'middle',
+        lineWidth: 0.5,
+        lineColor: [220, 220, 220]
+      },
+      bodyStyles: {
+        lineWidth: 0.5,
+        lineColor: [220, 220, 220]
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      }
+    });
 
-    // Menambahkan teks "Semarang, tanggal - bulan - tahun" di pojok kanan
-    startYPosition += 20;
-    doc.text(`Semarang, ${formattedDate}`, pageWidth - 100, startYPosition);
+    // Update posisi Y untuk tabel berikutnya
+    startYPosition = doc.previousAutoTable.finalY + 10;
+  }
 
-    // Menambahkan spasi kosong untuk tanda tangan
-    startYPosition += 25;
-    doc.text('_____________', pageWidth - 80, startYPosition);
-    doc.text(' Dosen ', pageWidth - 80, startYPosition + 10);
+  // Lebar halaman
+  const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Menyimpan file PDF
-    doc.save(`export-${matkul.matkul.nama_matkul}-${bulan}-${tahun}.pdf`);
-  };
+  // Tambahkan teks untuk tanggal dan tanda tangan setelah semua data
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  // Cek jika butuh halaman baru untuk tanda tangan
+  if (startYPosition + 50 > doc.internal.pageSize.height - 30) {
+    doc.addPage();
+    startYPosition = 20;
+  }
+
+  // Menambahkan teks "Semarang, tanggal - bulan - tahun" di pojok kanan
+  startYPosition += 20;
+  doc.text(`Semarang, ${formattedDate}`, pageWidth - 100, startYPosition);
+
+  // Menambahkan spasi kosong untuk tanda tangan
+  startYPosition += 25;
+  doc.text('_____________', pageWidth - 80, startYPosition);
+  doc.text(' Dosen ', pageWidth - 80, startYPosition + 10);
+
+  // Menyimpan file PDF
+  doc.save(`export-${matkul.matkul.nama_matkul}-${bulan}-${tahun}.pdf`);
+};
 
   const handleExportExcel = async (matkulId) => {
     try {
@@ -525,7 +524,7 @@ const DataBulan = () => {
                               {dates.map(date => (
                                 <TableCell 
                                   key={date} 
-                                  colSpan={3} 
+                                  colSpan={4} 
                                   align="center"
                                   sx={{ 
                                     fontWeight: 'bold',
@@ -573,6 +572,17 @@ const DataBulan = () => {
                                   >
                                     Durasi
                                   </TableCell>
+                                  <TableCell 
+                                    align="center"
+                                    sx={{ 
+                                      backgroundColor: theme.palette.primary.lighter || '#e3f2fd',
+                                      color: theme.palette.primary.dark,
+                                      fontWeight: 'medium',
+                                      minWidth: 80
+                                    }}
+                                  >
+                                    Status
+                                  </TableCell>
                                 </React.Fragment>
                               ))}
                             </TableRow>
@@ -607,6 +617,7 @@ const DataBulan = () => {
                                       
                                       const jamMasuk = absensiData?.jam_masuk;
                                       const jamKeluar = absensiData?.jam_keluar;
+                                      const status = absensiData?.status
                                       
                                       // Hitung durasi jika ada jam masuk dan keluar
                                       const durasiData = jamMasuk && jamKeluar 
@@ -635,6 +646,13 @@ const DataBulan = () => {
                                                 {`${durasiData.totalHours}:${durasiData.totalMinutes.toString().padStart(2, '0')}`}
                                               </Typography>
                                             ) : (
+                                              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                                -
+                                              </Typography>
+                                            )}
+                                          </TableCell>
+                                           <TableCell align="center">
+                                            {status || (
                                               <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
                                                 -
                                               </Typography>

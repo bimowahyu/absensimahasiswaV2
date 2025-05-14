@@ -5,6 +5,8 @@ import { Container, Row, Col, Form, Button, Card, Spinner } from 'react-bootstra
 import styled from 'styled-components';
 import { FiUser, FiClock, FiCalendar, FiSearch, FiBook } from 'react-icons/fi';
 import { FaRegClock } from 'react-icons/fa';
+import { Modal } from 'react-bootstrap';
+
 
 const DashboardContainer = styled(Container)`
   margin-left: 250px;
@@ -139,6 +141,10 @@ export const AbsenManual = () => {
   const [matkuls, setMatkuls] = useState([]);
   const [matkul_id, setMatkulId] = useState('');
   const navigate = useNavigate();
+const [showModal, setShowModal] = useState(false);
+const [modalTitle, setModalTitle] = useState('');
+const [modalMessage, setModalMessage] = useState('');
+const [modalVariant, setModalVariant] = useState(''); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -154,6 +160,12 @@ export const AbsenManual = () => {
     };
     fetchData();
   }, []);
+const showFeedbackModal = (title, message, variant) => {
+  setModalTitle(title);
+  setModalMessage(message);
+  setModalVariant(variant);
+  setShowModal(true);
+};
 
   const saveAbsen = async (e) => {
     e.preventDefault();
@@ -172,12 +184,15 @@ export const AbsenManual = () => {
         jam_keluar,
         tanggal: tgl_absensi,
       });
-      setMessage('Absensi berhasil dibuat');
+       showFeedbackModal('Sukses', 'Absensi berhasil dibuat.', 'success');
+    //  setMessage('Absensi berhasil dibuat');
       setTimeout(() => {
-        navigate('/DashboardAdmin');
-      }, 1500);
+    setShowModal(false);
+    navigate('/DashboardAdmin');
+  }, 2000);
     } catch (error) {
-      setError(error.response ? error.response.data.msg : 'Gagal menambah absensi.');
+      const errorMsg = error.response ? error.response.data.msg : 'Gagal menambah absensi.';
+  showFeedbackModal('Gagal', errorMsg, 'danger');
     } finally {
       setIsLoading(false);
     }
@@ -314,6 +329,15 @@ export const AbsenManual = () => {
           </Form>
         </CardBody>
       </StyledCard>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+  <Modal.Header closeButton className={`bg-${modalVariant} text-white`}>
+    <Modal.Title>{modalTitle}</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    {modalMessage}
+  </Modal.Body>
+</Modal>
+
     </DashboardContainer>
   );
 };

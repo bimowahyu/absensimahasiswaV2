@@ -25,6 +25,7 @@ import { SettingAbsensiMatkulPages } from "./pages/adminpages/SettingAbsensiMatk
 import DashboardDosenPages from "./pages/adminpages/DashboardDosenPages";
 import RekapAbsenDosenPages from "./pages/adminpages/RekapAbsenDosenPages";
 // import Lokasi from "./component/lokasi";
+import { AbsenceRequestFormPages } from "./pages/AbsenceRequestFormPages";
 
 import { AkademikPages } from "./pages/AkademikPages";
 import { AbsenControllPages } from "./pages/adminpages/AbsenControllPages";
@@ -80,6 +81,7 @@ function App() {
         <Route path="/datadosen" element={<DataDosenPages />} /> 
        
         <Route path="/akademik" element={<AkademikPages />} /> 
+       <Route path="/izin" element={<AbsenceRequestFormPages />} /> 
        
         {/* <Route path="/lokasi" element={<Lokasi  />} /> */}
         

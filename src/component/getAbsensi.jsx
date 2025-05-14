@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Card, CardContent, Typography, Grid, Button } from '@mui/material';
+import { Container, Card, CardContent, Typography, Grid, Button, Divider } from '@mui/material';
 import LocationMap from './locationMaps';
 import Location from './location';
 import { NavLink } from "react-router-dom";
@@ -20,12 +20,10 @@ const AbsensiPage = () => {
       try {
         const response = await axios.get(`${getApiBaseUrl()}/absensi/get`, { withCredentials: true });
         
-        // Transform data dari backend ke format yang diharapkan komponen
+        // Gunakan seluruh data yang diterima dari API
         const transformedData = {
           lokasi: response.data.lokasi,
-          absensiHariIni: response.data.data && response.data.data.length > 0 
-            ? response.data.data[0] 
-            : null,
+         absensiHariIni: Array.isArray(response.data.data) ? response.data.data : [],
           jumlah: response.data.jumlah
         };
         
@@ -57,9 +55,9 @@ const AbsensiPage = () => {
     return <div>Loading...</div>;
   }
 
-  const { lokasi, absensiHariIni } = absensiData;
+  const { lokasi, absensiHariIni, jumlah } = absensiData;
 
-  if (!absensiHariIni) {
+  if (!absensiHariIni || absensiHariIni.length === 0) {
     return (
       <Container maxWidth="sm" style={{ marginTop: '20px' }}>
         <Card>
@@ -122,87 +120,103 @@ const AbsensiPage = () => {
     );
   }
 
-  const { latitude: latitudeMasuk, longitude: longitudeMasuk } = parseCoordinates(absensiHariIni.lokasi_masuk);
-  const { latitude: latitudeKeluar, longitude: longitudeKeluar } = parseCoordinates(absensiHariIni.lokasi_keluar);
+  // Data lokasi kampus
   const { latitude: latitudeKampus, longitude: longitudeKampus } = parseCoordinates(lokasi.lokasi);
 
   return (
-    <Container maxWidth="sm" style={{ marginTop: '20px' }}>
+    <Container maxWidth="sm" style={{ marginTop: '20px', marginBottom: '20px' }}>
       <Card>
         <CardContent>
           <Typography variant="h5" style={{ marginBottom: '20px', textAlign: 'center' }}>
-            Data Absensi Hari Ini
+            Data Absensi Hari Ini ({jumlah} Kehadiran)
           </Typography>
           
-          <Typography variant="h6" style={{ marginBottom: '10px' }}>
-            Mata Kuliah: {absensiHariIni.matkul?.nama_matkul || '-'}
-          </Typography>
-          
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="body1">
-                <strong>Tanggal:</strong> {new Date(absensiHariIni.tgl_absensi).toLocaleDateString('id-ID', { 
-                  day: '2-digit', 
-                  month: '2-digit', 
-                  year: 'numeric' 
-                })}
-              </Typography>
-              
-              <Typography variant="body1">
-                <strong>Jam Masuk:</strong> {absensiHariIni.jam_masuk || '-'}
-              </Typography>
-              
-              <Typography variant="body1">
-                <strong>Jam Keluar:</strong> {absensiHariIni.jam_keluar || '-'}
-              </Typography>
-
-              <Typography variant="body1">
-                <strong>Status:</strong> {absensiHariIni.status || '-'}
-              </Typography>
-              
-              <Typography variant="body1" style={{ marginTop: '15px' }}>
-                <strong>Lokasi Masuk:</strong>
-              </Typography>
-              {latitudeMasuk && longitudeMasuk ? (
-                <>
-                  <Typography variant="body2">
-                    {absensiHariIni.lokasi_masuk}
-                  </Typography>
-                  <LocationMap 
-                    latitude={latitudeMasuk} 
-                    longitude={longitudeMasuk} 
-                    style={{ width: '100%', height: '200px', marginTop: '10px' }}  
-                  />
-                </>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  Tidak ada data lokasi masuk
+          {/* Menampilkan semua data absensi hari ini */}
+          {absensiHariIni.map((absensi, index) => {
+            const { latitude: latitudeMasuk, longitude: longitudeMasuk } = parseCoordinates(absensi.lokasi_masuk);
+            const { latitude: latitudeKeluar, longitude: longitudeKeluar } = parseCoordinates(absensi.lokasi_keluar);
+            
+            return (
+              <div key={absensi.id}>
+                {index > 0 && (
+                  <Divider style={{ margin: '20px 0', borderColor: '#aaa', borderWidth: '2px' }} />
+                )}
+                
+                <Typography variant="h6" style={{ marginBottom: '10px', color: '#1976d2' }}>
+                  Mata Kuliah: {absensi.matkul?.nama_matkul || '-'}
                 </Typography>
-              )}
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Typography variant="body1">
+                      <strong>Tanggal:</strong> {new Date(absensi.tgl_absensi).toLocaleDateString('id-ID', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric' 
+                      })}
+                    </Typography>
+                    
+                    <Typography variant="body1">
+                      <strong>Jam Masuk:</strong> {absensi.jam_masuk || '-'}
+                    </Typography>
+                    
+                    <Typography variant="body1">
+                      <strong>Jam Keluar:</strong> {absensi.jam_keluar || '-'}
+                    </Typography>
 
-              <Typography variant="body1" style={{ marginTop: '15px' }}>
-                <strong>Lokasi Keluar:</strong>
-              </Typography>
-              {latitudeKeluar && longitudeKeluar ? (
-                <>
-                  <Typography variant="body2">
-                    {absensiHariIni.lokasi_keluar}
-                  </Typography>
-                  <Location 
-                    latitude={latitudeKeluar} 
-                    longitude={longitudeKeluar} 
-                    style={{ width: '100%', height: '200px', marginTop: '10px' }}  
-                  />
-                </>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  Tidak ada data lokasi keluar
-                </Typography>
-              )}
-            </Grid>
-          </Grid>
+                    <Typography variant="body1">
+                      <strong>Status:</strong> <span style={{ 
+                        color: absensi.status === 'hadir' ? 'green' : 
+                              absensi.status === 'izin' ? 'blue' : 'orange'
+                      }}>{absensi.status || '-'}</span>
+                    </Typography>
+                    
+                    <Typography variant="body1" style={{ marginTop: '15px' }}>
+                      <strong>Lokasi Masuk:</strong>
+                    </Typography>
+                    {latitudeMasuk && longitudeMasuk ? (
+                      <>
+                        <Typography variant="body2">
+                          {absensi.lokasi_masuk}
+                        </Typography>
+                        <LocationMap 
+                          latitude={latitudeMasuk} 
+                          longitude={longitudeMasuk} 
+                          style={{ width: '100%', height: '200px', marginTop: '10px' }}  
+                        />
+                      </>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        Tidak ada data lokasi masuk
+                      </Typography>
+                    )}
 
-          <Typography variant="h5" style={{ marginTop: '20px', textAlign: 'center' }}>
+                    <Typography variant="body1" style={{ marginTop: '15px' }}>
+                      <strong>Lokasi Keluar:</strong>
+                    </Typography>
+                    {latitudeKeluar && longitudeKeluar ? (
+                      <>
+                        <Typography variant="body2">
+                          {absensi.lokasi_keluar}
+                        </Typography>
+                        <Location 
+                          latitude={latitudeKeluar} 
+                          longitude={longitudeKeluar} 
+                          style={{ width: '100%', height: '200px', marginTop: '10px' }}  
+                        />
+                      </>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        Tidak ada data lokasi keluar
+                      </Typography>
+                    )}
+                  </Grid>
+                </Grid>
+              </div>
+            );
+          })}
+
+          <Typography variant="h5" style={{ margin: '20px 0', textAlign: 'center' }}>
             Data Lokasi Kampus
           </Typography>
           

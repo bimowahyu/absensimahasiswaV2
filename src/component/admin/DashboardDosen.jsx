@@ -366,6 +366,7 @@ const DashboardDosen = () => {
                       <TableCell>Mata Kuliah</TableCell>
                       <TableCell>Tanggal</TableCell>
                       <TableCell>Jam Masuk</TableCell>
+                        <TableCell>izin</TableCell>
                       <TableCell>Status</TableCell>
                     </TableRow>
                   </StyledTableHead>
@@ -384,6 +385,7 @@ const DashboardDosen = () => {
                           <TableCell>{attendance.matkul.nama_matkul}</TableCell>
                           <TableCell>{moment(attendance.tgl_absensi).format('DD MMMM YYYY')}</TableCell>
                           <TableCell>{attendance.jam_masuk}</TableCell>
+                           <TableCell>{attendance.status}</TableCell>
                           <TableCell>
                             <StatusChip 
                               label={attendance.status}

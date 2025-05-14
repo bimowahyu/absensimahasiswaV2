@@ -318,15 +318,31 @@ const DataAbsenHarian = () => {
                       <Typography variant="body2" color="textSecondary">Keluar</Typography>
                       <Typography variant="body1">{absen.jam_keluar || '-'}</Typography>
                     </Box>
+                      <Box textAlign="left" ml={1}>
+                      <Typography variant="body2" color="textSecondary">Status</Typography>
+                      <Typography variant="body1">
+                        {absen.status === 'izin' ? 'Izin' :
+                        absen.status === 'sakit' ? 'Sakit' :
+                        absen.status || '-'}
+                      </Typography>
+                    </Box>
                   </Box>
                   
-                  <Box ml={2}>
-                    <StyledChip 
-                      label={absen.jam_keluar ? "Lengkap" : "Masuk saja"} 
-                      color={absen.jam_keluar ? "success" : "warning"}
-                      size="small" 
-                    />
-                  </Box>
+                 <Box ml={2}>
+                        {absen.status === 'izin' || absen.status === 'sakit' ? (
+                          <StyledChip 
+                            label={absen.status === 'izin' ? 'Izin' : 'Sakit'} 
+                            color="info"
+                            size="small"
+                          />
+                        ) : (
+                          <StyledChip 
+                            label={absen.jam_keluar ? "Lengkap" : "Masuk saja"} 
+                            color={absen.jam_keluar ? "success" : "warning"}
+                            size="small"
+                          />
+                        )}
+                      </Box>
                   
                   <Button 
                     variant="outlined" 
