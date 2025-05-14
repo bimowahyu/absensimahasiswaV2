@@ -32,7 +32,7 @@ const AbsensiPage = () => {
         setError(error.message);
       }
     };
-
+//=======================================NGELU WKWKWK===============================
     fetchAbsensiData();
   }, []);
 
