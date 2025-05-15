@@ -211,7 +211,7 @@ const DataAbsenHarian = () => {
 
   // Mengelompokkan absensi berdasarkan cabang
   const absensiPerCabang = absensiHarian.reduce((acc, absen) => {
-    const cabang = absen.mahasiswa.Cabang.nama;
+   const cabang = absen.mahasiswa?.Cabang?.nama || "-";
     if (!acc[cabang]) {
       acc[cabang] = [];
     }
@@ -299,7 +299,7 @@ const DataAbsenHarian = () => {
                   </Typography>
                   
                   <AbsenInfo>
-                    <EmployeeName variant="body1">{absen.mahasiswa.nama_lengkap}</EmployeeName>
+                    <EmployeeName variant="body1">{absen.mahasiswa.nama_lengkap || '-'}</EmployeeName>
                     <AbsenTime>
                       <CalendarTodayIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="textSecondary">
@@ -311,7 +311,7 @@ const DataAbsenHarian = () => {
                   <Box display="flex" alignItems="center" gap={1}>
                     <Box textAlign="right" mr={1}>
                       <Typography variant="body2" color="textSecondary">Masuk</Typography>
-                      <Typography variant="body1">{absen.jam_masuk}</Typography>
+                      <Typography variant="body1">{absen.jam_masuk || '-'}</Typography>
                     </Box>
                     <Divider orientation="vertical" flexItem />
                     <Box textAlign="left" ml={1}>
@@ -394,7 +394,7 @@ const DataAbsenHarian = () => {
                         <PersonIcon />
                         <Box>
                           <Typography variant="subtitle2">Nama Mahasiswa</Typography>
-                          <Typography variant="body1">{selectedAbsen.mahasiswa.nama_lengkap}</Typography>
+                          <Typography variant="body1">{selectedAbsen.mahasiswa.nama_lengkap || '-'}</Typography>
                         </Box>
                       </InfoItem>
                       
@@ -402,7 +402,7 @@ const DataAbsenHarian = () => {
                         <BusinessIcon />
                         <Box>
                           <Typography variant="subtitle2">Nama Cabang</Typography>
-                          <Typography variant="body1">{selectedAbsen.mahasiswa.Cabang.nama}</Typography>
+                          <Typography variant="body1">{selectedAbsen.mahasiswa.Cabang?.nama || '-'}</Typography>
                         </Box>
                       </InfoItem>
                       
@@ -411,7 +411,7 @@ const DataAbsenHarian = () => {
                         <Box>
                           <Typography variant="subtitle2">Tanggal Absensi</Typography>
                           <Typography variant="body1">
-                            {new Date(selectedAbsen.tgl_absensi).toLocaleDateString('id-ID', { 
+                            {new Date(selectedAbsen.tgl_absensi|| '-').toLocaleDateString('id-ID', { 
                               weekday: 'long', 
                               day: 'numeric', 
                               month: 'long', 
