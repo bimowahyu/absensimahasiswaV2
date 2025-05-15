@@ -28,8 +28,8 @@ const AbsensiChart = () => {
   if (!data) return <div>Loading...</div>;
 
   const chartData = Object.keys(data).map(mahasiswaId => ({
-    name: data[mahasiswaId].nama_lengkap,
-    kehadiran: data[mahasiswaId].kehadiran
+    name: data[mahasiswaId].nama_lengkap || '-',
+    kehadiran: data[mahasiswaId].kehadiran || '-'
   }));
 
   return (

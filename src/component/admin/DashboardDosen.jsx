@@ -378,14 +378,14 @@ const DashboardDosen = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <Avatar>{attendance.mahasiswa.nama_lengkap.charAt(0)}</Avatar>
                               <Typography variant="body2" fontWeight={500}>
-                                {attendance.mahasiswa.nama_lengkap}
+                                {attendance.mahasiswa.nama_lengkap || '-'}
                               </Typography>
                             </Box>
                           </TableCell>
-                          <TableCell>{attendance.matkul.nama_matkul}</TableCell>
+                          <TableCell>{attendance.matkul?.nama_matkul || '-'}</TableCell>
                           <TableCell>{moment(attendance.tgl_absensi).format('DD MMMM YYYY')}</TableCell>
-                          <TableCell>{attendance.jam_masuk}</TableCell>
-                           <TableCell>{attendance.status}</TableCell>
+                          <TableCell>{attendance.jam_masuk || '-'}</TableCell>
+                           <TableCell>{attendance.status || '-'}</TableCell>
                           <TableCell>
                             <StatusChip 
                               label={attendance.status}

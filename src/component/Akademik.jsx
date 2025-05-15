@@ -165,12 +165,12 @@ export const Akademik = () => {
                         </Grid>
                         <Grid item xs={12} sm={8}>
                             <Typography variant="h4" gutterBottom>
-                                {mahasiswa.nama_lengkap}
+                                {mahasiswa?.nama_lengkap || '-'}
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                 <PersonOutlineOutlined fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
                                 <Typography variant="body1" color="text.secondary">
-                                    {mahasiswa.username}
+                                    {mahasiswa?.username || '-'}
                                 </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>

@@ -388,9 +388,9 @@ export const SettingAbsensiMatkul = () => {
           <TableBody>
             {mahasiswaData.mahasiswa.map((mahasiswa) => (
               <TableRow key={mahasiswa.id}>
-                <TableCell>{mahasiswa.nama_lengkap}</TableCell>
-                <TableCell>{mahasiswa.username}</TableCell>
-                <TableCell>{mahasiswa.CabangId}</TableCell>
+                <TableCell>{mahasiswa.nama_lengkap  || 'N/A'}</TableCell>
+                <TableCell>{mahasiswa.username  || 'N/A'}</TableCell>
+                <TableCell>{mahasiswa.CabangId  || 'N/A'}</TableCell>
                 <TableCell align="center">
                   <IconButton onClick={() => handleOpenMahasiswaDialog(mahasiswa)} color="primary" title="Edit">
                     <FaEdit />
@@ -447,9 +447,9 @@ export const SettingAbsensiMatkul = () => {
               <TableBody>
                 {matkulMahasiswaData.mahasiswa.map((mahasiswa) => (
                   <TableRow key={mahasiswa.id}>
-                    <TableCell>{mahasiswa.nama_lengkap}</TableCell>
-                    <TableCell>{mahasiswa.username}</TableCell>
-                    <TableCell>{mahasiswa.CabangId}</TableCell>
+                    <TableCell>{mahasiswa.nama_lengkap  || 'N/A'}</TableCell>
+                    <TableCell>{mahasiswa.username  || 'N/A'}</TableCell>
+                    <TableCell>{mahasiswa.CabangId  || 'N/A'}</TableCell>
                     <TableCell align="center">
                       <IconButton 
                         onClick={() => handleOpenDeleteDialog(mahasiswa.id, 'enrollment')} 

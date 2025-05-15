@@ -86,8 +86,8 @@ export const DataMahasiswa = () => {
               {filteredMahasiswa.map((mhs, index) => (
                 <TableRow key={mhs.id || index}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{mhs.username}</TableCell>
-                  <TableCell>{mhs.nama_lengkap}</TableCell>
+                  <TableCell>{mhs.username || 'N/A'}</TableCell>
+                  <TableCell>{mhs.nama_lengkap || 'N/A'}</TableCell>
               
                   <TableCell>{mhs.Cabang?.nama || 'N/A'}</TableCell>
                   <TableCell>
@@ -114,11 +114,11 @@ export const DataMahasiswa = () => {
         <DialogContent>
           {selectedMahasiswa && (
             <>
-              <Typography><strong>Nama Lengkap:</strong> {selectedMahasiswa.nama_lengkap}</Typography>
-              <Typography><strong>Username:</strong> {selectedMahasiswa.username}</Typography>
+              <Typography><strong>Nama Lengkap:</strong> {selectedMahasiswa.nama_lengkap  || 'N/A'}</Typography>
+              <Typography><strong>Username:</strong> {selectedMahasiswa.username  || 'N/A'}</Typography>
              
               <Typography><strong>Kampus:</strong> {selectedMahasiswa.Cabang?.nama || 'N/A'}</Typography>
-              <Typography><strong>Telepon:</strong> {selectedMahasiswa.no_telp}</Typography>
+              {/* <Typography><strong>Telepon:</strong> {selectedMahasiswa.no_telp}</Typography> */}
               <img
                 src={`${getApiBaseUrl()}/uploads/mahasiswa/${selectedMahasiswa.avatar}`}
                 alt="Avatar"

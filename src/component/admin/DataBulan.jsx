@@ -259,9 +259,15 @@ const handleExportPDF = (matkulId) => {
 
     // Mendapatkan semua mahasiswa unik yang hadir di mata kuliah ini
     const mahasiswaSet = new Set();
+    // matkul.absensi.forEach(record => {
+    //   mahasiswaSet.add(record.mahasiswa.nama_lengkap);
+    // });
     matkul.absensi.forEach(record => {
-      mahasiswaSet.add(record.mahasiswa.nama_lengkap);
-    });
+  if (record.mahasiswa && record.mahasiswa.nama_lengkap) {
+    mahasiswaSet.add(record.mahasiswa.nama_lengkap);
+  }
+});
+
     
     // Membuat baris data untuk setiap mahasiswa
     Array.from(mahasiswaSet).forEach(namaMahasiswa => {
@@ -269,10 +275,16 @@ const handleExportPDF = (matkulId) => {
       
       dateChunk.forEach(date => {
         // Mencari data absensi untuk mahasiswa ini pada tanggal ini
-        const absensiRecord = matkul.absensi.find(record => 
-          record.mahasiswa.nama_lengkap === namaMahasiswa && 
-          record.tgl_absensi === date
-        );
+        // const absensiRecord = matkul.absensi.find(record => 
+        //   record.mahasiswa.nama_lengkap === namaMahasiswa && 
+        //   record.tgl_absensi === date
+        // );
+        const absensiRecord = matkul.absensi.find(record =>
+  record.mahasiswa &&
+  record.mahasiswa.nama_lengkap === namaMahasiswa &&
+  record.tgl_absensi === date
+);
+
         
         const jamMasuk = absensiRecord?.jam_masuk || '-';
         const jamKeluar = absensiRecord?.jam_keluar || '-';
@@ -487,7 +499,7 @@ const handleExportPDF = (matkulId) => {
             {sortedMatkulKeys.map((key) => {
               const matkul = absensi[key];
               const isExpanded = expandedMatkul[key] !== false; // Default to expanded
-              
+              if (!matkul || !matkul.absensi) return null;
               return (
                 <SubtleCard key={key}>
                   <CardHeaderStyled

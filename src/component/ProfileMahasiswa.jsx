@@ -46,7 +46,7 @@ const ProfileMahasiswa = () => {
                                             : undefined
                                     }
                                     sx={{ width: 100, height: 100 }}
-                                    alt={dataMahasiswa.nama_lengkap} 
+                                    alt={dataMahasiswa.nama_lengkap || '-'} 
                                 />
                             </Grid>
                             <Grid item xs={9}>
@@ -54,8 +54,8 @@ const ProfileMahasiswa = () => {
                                 <Typography variant="body2">{dataMahasiswa.jabatan}</Typography> */}
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="h6">{dataMahasiswa.nama_lengkap}</Typography>
-                                <Typography variant="body2">{dataMahasiswa.jabatan}</Typography>
+                                <Typography variant="h6">{dataMahasiswa.nama_lengkap || '-'}</Typography>
+                                <Typography variant="body2">{dataMahasiswa.jabatan || '-'}</Typography>
                             </Grid>
                         </Grid>
                     ) : (
