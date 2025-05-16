@@ -34,6 +34,7 @@ import { AddAdminPages } from "./pages/adminpages/AddAdminPages";
 import { DataAdminPages } from "./pages/adminpages/DataAdminPages";
 import { AbsenManualPages } from "./pages/adminpages/AbsenManualPages";
 import { FormEditAdminPages } from "./pages/adminpages/FormEditAdminPages";
+import DataMingguPages from "./pages/adminpages/DataMingguPages";
 
 // import { useNavigate } from "react-router-dom";
 // import { useSelector } from "react-redux";
@@ -72,6 +73,7 @@ function App() {
         <Route path="/admin/add" element={<AddAdminPages />} />
         <Route path="/data" element={<DataPages />} /> 
         <Route path="/data/bulanan" element={<DataBulanPages />} /> 
+        <Route path="/data/mingguan" element={<DataMingguPages />} /> 
         <Route path="/admin/edit/:id" element={<EditProfilePages />} />
         <Route path="/dataadmin/edit/:id" element={<FormEditAdminPages />} />
         <Route path="/editprofile" element={<EditprofileMahasiswaPages />} />

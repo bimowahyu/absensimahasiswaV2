@@ -197,7 +197,7 @@ export const Sidebar = () => {
         type: "dropdown",
         items: [
           { to: "/data/bulanan", text: "Data Bulanan" },
-          // { to: "/data", text: "Data Absensi" },
+          { to: "/data/mingguan", text: "Data Mingguan" },
           { to: "/absenmanual", text: "Absensi Manual" },
           { to: "/editdata", text: "Edit Absensi" },
         ]
