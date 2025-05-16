@@ -33,8 +33,8 @@ function AbsenceRequestForm({ open, handleClose, matkulHariIni, onSubmitSuccess 
         status: 'izin',
         // alasan: '',
         matkul_id: '',
-        latitude: null,
-        longitude: null
+        // latitude: null,
+        // longitude: null
     });
 
     // Get geolocation on component mount
@@ -65,8 +65,8 @@ function AbsenceRequestForm({ open, handleClose, matkulHariIni, onSubmitSuccess 
                 status: 'izin',
                 alasan: '',
                 matkul_id: matkulHariIni.length > 0 ? matkulHariIni[0].id : '',
-                latitude: formData.latitude,
-                longitude: formData.longitude
+                // latitude: formData.latitude,
+                // longitude: formData.longitude
             });
             setError(null);
             setSuccess(false);
@@ -98,10 +98,10 @@ function AbsenceRequestForm({ open, handleClose, matkulHariIni, onSubmitSuccess 
         //     return;
         // }
 
-        if (!formData.latitude || !formData.longitude) {
-            setError("Lokasi tidak tersedia. Mohon aktifkan layanan lokasi");
-            return;
-        }
+        // if (!formData.latitude || !formData.longitude) {
+        //     setError("Lokasi tidak tersedia. Mohon aktifkan layanan lokasi");
+        //     return;
+        // }
 
         try {
             setLoading(true);
@@ -117,8 +117,8 @@ function AbsenceRequestForm({ open, handleClose, matkulHariIni, onSubmitSuccess 
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    latitude: formData.latitude,
-                    longitude: formData.longitude,
+                    // latitude: formData.latitude,
+                    // longitude: formData.longitude,
                     image: dummyImage, // Required but not used for izin/sakit
                     matkul_id: formData.matkul_id,
                     status: formData.status
