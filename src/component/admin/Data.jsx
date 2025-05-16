@@ -270,12 +270,12 @@ const Data = () => {
 
   const sortedCabangKeys = Object.keys(absensi)
     .sort((a, b) => {
-      const cabangA = absensi[a].cabang.nama_cabang.toLowerCase();
-      const cabangB = absensi[b].cabang.nama_cabang.toLowerCase();
+      const cabangA = absensi[a].cabang.nama.toLowerCase();
+      const cabangB = absensi[b].cabang.nama.toLowerCase();
       return cabangA.localeCompare(cabangB);
     })
     .filter(key => 
-      absensi[key].cabang.nama_cabang.toLowerCase().includes(searchTerm.toLowerCase())
+      absensi[key].cabang.nama.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   const scroll = (cabangKey, direction) => {
@@ -303,8 +303,8 @@ const Data = () => {
              <TextField
                fullWidth
                variant="outlined"
-               label="Cari berdasarkan nama cabang"
-               placeholder="Masukkan nama cabang..."
+               label="Cari berdasarkan lokasi"
+               placeholder="Masukkan nama lokasi..."
                value={searchTerm}
                onChange={(e) => setSearchTerm(e.target.value)}
                sx={{ 
@@ -358,7 +358,7 @@ const Data = () => {
                    onChange={handleAccordionChange(key)}
                  >
                    <AccordionHeader expandIcon={<ExpandMoreIcon />}>
-                     <CabangTitle variant="h6">{cabang.cabang.nama_cabang}</CabangTitle>
+                     <CabangTitle variant="h6">{cabang.cabang.nama}</CabangTitle>
                    </AccordionHeader>
                    <AccordionDetails>
                      <ScrollableTableContainer>

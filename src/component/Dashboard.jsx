@@ -29,6 +29,7 @@ import { LogOut, reset } from "../fitur/AuthMahasiswa";
 import { motion } from 'framer-motion';
 import AbsenceRequestForm from './AbsenceRequestForm';
 
+
 // Component for animated elements
 const AnimatedBox = ({ children, delay = 0 }) => (
     <motion.div
@@ -192,7 +193,8 @@ function Dashboard() {
             return null;
         }
         
-        const today = new Date().toISOString().split('T')[0];
+       // const today = new Date().toISOString().split('T')[0];
+       const today = new Date().toLocaleDateString('en-CA'); 
         console.log(`Looking for attendance for matkul ID ${matkulId} on ${today}`);
         
         const found = absensiData.data.find(a => 
@@ -205,63 +207,100 @@ function Dashboard() {
     };
 
     // Check course status based on time
-    const getCourseStatus = (matkul) => {
-        if (!matkul) return { status: 'unknown', text: 'Unknown' };
+    // const getCourseStatus = (matkul) => {
+    //     if (!matkul) return { status: 'unknown', text: 'Unknown' };
         
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const currentTimeMinutes = currentHour * 60 + currentMinute;
+    //     const now = new Date();
+    //     const currentHour = now.getHours();
+    //     const currentMinute = now.getMinutes();
+    //     const currentTimeMinutes = currentHour * 60 + currentMinute;
         
-        // Parse course times
-        const parseTime = (timeStr) => {
-            if (!timeStr) return 0;
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return (isNaN(hours) ? 0 : hours) * 60 + (isNaN(minutes) ? 0 : minutes);
-        };
+    //     // Parse course times
+    //     const parseTime = (timeStr) => {
+    //         if (!timeStr) return 0;
+    //         const [hours, minutes] = timeStr.split(':').map(Number);
+    //         return (isNaN(hours) ? 0 : hours) * 60 + (isNaN(minutes) ? 0 : minutes);
+    //     };
         
-        const openTime = parseTime(matkul.jam_dibuka_presensi);
-        const startTime = parseTime(matkul.jam_masuk_presensi);
-        const endTime = parseTime(matkul.jam_keluar_presensi);
+    //     const openTime = parseTime(matkul.jam_dibuka_presensi);
+    //     const startTime = parseTime(matkul.jam_masuk_presensi);
+    //     const endTime = parseTime(matkul.jam_keluar_presensi);
         
-        console.log(`Course: ${matkul.nama_matkul}`);
-        console.log(`Times: Open=${openTime}, Start=${startTime}, End=${endTime}, Current=${currentTimeMinutes}`);
+    //     console.log(`Course: ${matkul.nama_matkul}`);
+    //     console.log(`Times: Open=${openTime}, Start=${startTime}, End=${endTime}, Current=${currentTimeMinutes}`);
         
-        // Check if attendance is already recorded
-        const matkulAbsensi = getAbsensiForMatkul(matkul.id);
-        console.log('Absensi data for course:', matkulAbsensi);
+    //     // Check if attendance is already recorded
+    //     const matkulAbsensi = getAbsensiForMatkul(matkul.id);
+    //     console.log('Absensi data for course:', matkulAbsensi);
         
-        // If attendance is complete
-        if (matkulAbsensi?.jam_masuk && matkulAbsensi?.jam_keluar) {
-            console.log('Complete attendance detected');
-            return { status: 'completed', text: 'Presensi Lengkap' };
-        } 
-        // If only check-in recorded
-        else if (matkulAbsensi?.jam_masuk && !matkulAbsensi?.jam_keluar) {
-            console.log('Check-in only detected, need checkout');
-            // Always show need-checkout if end time has been reached
-            if (currentTimeMinutes >= endTime) {
-                return { status: 'need-checkout', text: 'Perlu Presensi Keluar' };
-            } else {
-                return { status: 'in-progress', text: 'Sedang Berlangsung' };
-            }
-        } 
-        // No attendance recorded yet
-        else {
-            console.log('No attendance record yet');
-            if (currentTimeMinutes < openTime) {
-                return { status: 'upcoming', text: 'Belum Dibuka' };
-            } else if (currentTimeMinutes >= openTime && currentTimeMinutes <= startTime) {
-                return { status: 'open', text: 'Buka Presensi' };
-            } else if (currentTimeMinutes > startTime && currentTimeMinutes < endTime) {
-                return { status: 'ongoing', text: 'Sedang Berlangsung' };
-            } else {
-                // After end time with no attendance
-                return { status: 'ended', text: 'Selesai' };
-            }
-        }
+    //     // If attendance is complete
+    //     if (matkulAbsensi?.jam_masuk && matkulAbsensi?.jam_keluar) {
+    //         console.log('Complete attendance detected');
+    //         return { status: 'completed', text: 'Presensi Lengkap' };
+    //     } 
+    //     // If only check-in recorded
+    //     else if (matkulAbsensi?.jam_masuk && !matkulAbsensi?.jam_keluar) {
+    //         console.log('Check-in only detected, need checkout');
+    //         // Always show need-checkout if end time has been reached
+    //         if (currentTimeMinutes >= endTime) {
+    //             return { status: 'need-checkout', text: 'Perlu Presensi Keluar' };
+    //         } else {
+    //             return { status: 'in-progress', text: 'Sedang Berlangsung' };
+    //         }
+    //     } 
+    //     // No attendance recorded yet
+    //     else {
+    //         console.log('No attendance record yet');
+    //         if (currentTimeMinutes < openTime) {
+    //             return { status: 'upcoming', text: 'Belum Dibuka' };
+    //         } else if (currentTimeMinutes >= openTime && currentTimeMinutes <= startTime) {
+    //             return { status: 'open', text: 'Buka Presensi' };
+    //         } else if (currentTimeMinutes > startTime && currentTimeMinutes < endTime) {
+    //             return { status: 'ongoing', text: 'Sedang Berlangsung' };
+    //         } else {
+    //             // After end time with no attendance
+    //             return { status: 'ended', text: 'Selesai' };
+    //         }
+    //     }
+    // };
+// Perbaikan pada fungsi getCourseStatus
+const getCourseStatus = (matkul) => {
+    if (!matkul) return { status: 'unknown', text: 'Unknown' };
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTimeMinutes = currentHour * 60 + currentMinute;
+
+    const parseTime = (timeStr) => {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return (isNaN(hours) ? 0 : hours) * 60 + (isNaN(minutes) ? 0 : minutes);
     };
 
+    const openTime = parseTime(matkul.jam_dibuka_presensi);
+    const startTime = parseTime(matkul.jam_masuk_presensi);
+    const endTime = parseTime(matkul.jam_keluar_presensi);
+
+    const matkulAbsensi = getAbsensiForMatkul(matkul.id);
+
+    if (matkulAbsensi?.jam_masuk && matkulAbsensi?.jam_keluar) {
+        return { status: 'completed', text: 'Presensi Lengkap' };
+    } else if (matkulAbsensi?.jam_masuk && !matkulAbsensi?.jam_keluar) {
+        // Selalu tampilkan perlu checkout jika sudah checkin
+        return { status: 'need-checkout', text: 'Perlu Presensi Keluar' };
+    } else {
+        if (currentTimeMinutes < openTime) {
+            return { status: 'upcoming', text: 'Belum Dibuka' };
+        } else if (currentTimeMinutes >= openTime && currentTimeMinutes <= startTime) {
+            return { status: 'open', text: 'Buka Presensi' };
+        } else if (currentTimeMinutes > startTime && currentTimeMinutes < endTime) {
+            return { status: 'ongoing', text: 'Sedang Berlangsung' };
+        } else {
+            return { status: 'ended', text: 'Selesai' };
+        }
+    }
+};
     // Format waktu dari format 24 jam ke format biasa
     const formatTime = (timeString) => {
         if (!timeString) return '';
@@ -441,220 +480,182 @@ function Dashboard() {
                             </Paper>
                         ) : (
                             <Grid container spacing={2}>
-                               {matkulHariIni.map((matkul, index) => {
-                                    const courseStatus = getCourseStatus(matkul);
-                                    const matkulAbsensi = getAbsensiForMatkul(matkul.id);
-                                    const parseTime = (timeStr) => {
-                                        if (!timeStr) return 0;
-                                        const [hours, minutes] = timeStr.split(':').map(Number);
-                                        return (isNaN(hours) ? 0 : hours) * 60 + (isNaN(minutes) ? 0 : minutes);
-                                    };
-                                    return (
-                                        <Grid item xs={12} key={index}>
-                                            <Paper sx={{ 
-                                                p: 2, 
-                                                borderRadius: '16px',
-                                                border: '1px solid #f0f0f0',
-                                                boxShadow: '0 3px 10px rgba(0,0,0,0.05)',
-                                            }}>
-                                                <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                                                    <Box>
-                                                        <Typography variant="subtitle1" fontWeight="bold">
-                                                            {matkul.nama_matkul}
-                                                        </Typography>
-                                                        <Box display="flex" alignItems="center" mt={0.5}>
-                                                            <AccessTimeOutlined fontSize="small" sx={{ mr: 0.5, fontSize: 14, color: '#757575' }} />
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {formatTime(matkul.jam_masuk_presensi)} - {formatTime(matkul.jam_keluar_presensi)}
-                                                            </Typography>
-                                                        </Box>
-                                                        <Box display="flex" alignItems="center" mt={0.5}>
-                                                            <PersonOutlineOutlined fontSize="small" sx={{ mr: 0.5, fontSize: 14, color: '#757575' }} />
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {matkul.User?.name || 'Dosen'}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Box>
-                                                    <Box>
-                                                        <Chip 
-                                                            label={courseStatus.text} 
-                                                            size="small"
-                                                            sx={{
-                                                                borderRadius: '8px',
-                                                                fontWeight: '600',
-                                                                backgroundColor: 
-                                                                    courseStatus.status === 'open' ? '#e3f8ea' : 
-                                                                    courseStatus.status === 'ongoing' ? '#e3f2fd' :
-                                                                    courseStatus.status === 'in-progress' ? '#e3f2fd' :
-                                                                    courseStatus.status === 'need-checkout' ? '#fff3e0' :
-                                                                    courseStatus.status === 'completed' ? '#e8f5e9' : '#f5f5f5',
-                                                                color: 
-                                                                    courseStatus.status === 'open' ? '#43a047' :
-                                                                    courseStatus.status === 'ongoing' ? '#1976d2' :
-                                                                    courseStatus.status === 'in-progress' ? '#1976d2' :
-                                                                    courseStatus.status === 'need-checkout' ? '#ff9800' :
-                                                                    courseStatus.status === 'completed' ? '#2e7d32' : '#757575',
-                                                            }}
-                                                        />
-                                                        {/* Add Permission button for each course */}
-                                                        {/* {(courseStatus.status === 'upcoming' || courseStatus.status === 'open') && (
-                                                            <Button
-                                                                size="small"
-                                                                variant="outlined"
-                                                                color="warning"
-                                                                onClick={() => setShowAbsenceForm(true)}
-                                                                sx={{ 
-                                                                    mt: 1, 
-                                                                    borderRadius: '8px',
-                                                                    fontSize: '0.75rem',
-                                                                }}
-                                                            >
-                                                                Izin
-                                                            </Button>
-                                                        )} */}
-                                                    </Box>
-                                                </Box>
-                                                
-                                                {/* Course actions */}
-                                                {courseStatus.status === 'open' && (
-                                                    <Button 
-                                                        variant="contained"
-                                                        fullWidth
-                                                        component={NavLink}
-                                                        to="/createAbsen"
-                                                        sx={{ 
-                                                            mt: 2,
-                                                            borderRadius: '12px',
-                                                            textTransform: 'none',
-                                                            padding: '10px',
-                                                            background: 'linear-gradient(90deg, #1976d2 0%, #2196f3 100%)',
-                                                            fontWeight: 'bold',
-                                                            boxShadow: '0 4px 10px rgba(33, 150, 243, 0.3)',
-                                                        }}
-                                                    >
-                                                        Presensi Masuk
-                                                    </Button>
-                                                )}
-                                                
-                                                {/* Checked in but not out yet */}
-                                                {matkulAbsensi?.jam_masuk && !matkulAbsensi?.jam_keluar && (
-                                                    <Box mt={2}>
-                                                        <Button 
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            disabled
-                                                            startIcon={<CheckCircleOutlineOutlined sx={{ color: '#43a047' }} />}
-                                                            sx={{ 
-                                                                borderRadius: '12px',
-                                                                textTransform: 'none',
-                                                                padding: '10px',
-                                                                borderColor: '#e0e0e0',
-                                                                color: '#43a047',
-                                                                fontWeight: 'medium',
-                                                                '&.Mui-disabled': {
-                                                                    color: '#43a047',
-                                                                    borderColor: '#e0e0e0',
-                                                                }
-                                                            }}
-                                                        >
-                                                            Presensi Masuk: {formatTime(matkulAbsensi?.jam_masuk)}
-                                                        </Button>
-                                                        
-                                                        {/* Check out button */}
-                                                        {parseTime(matkul.jam_keluar_presensi) <= (new Date().getHours() * 60 + new Date().getMinutes()) && (
-                                                            <Button 
-                                                                variant="contained"
-                                                                fullWidth
-                                                                component={NavLink}
-                                                                to="/clockout"
-                                                                sx={{ 
-                                                                    mt: 1,
-                                                                    borderRadius: '12px',
-                                                                    textTransform: 'none',
-                                                                    padding: '10px',
-                                                                    background: 'linear-gradient(90deg, #ff9800 0%, #ff7043 100%)',
-                                                                    fontWeight: 'bold',
-                                                                    boxShadow: '0 4px 10px rgba(255, 152, 0, 0.3)',
-                                                                }}
-                                                            >
-                                                                Presensi Keluar
-                                                            </Button>
-                                                        )}
-                                                    </Box>
-                                                )}
-                                                
-                                                {/* Complete attendance */}
-                                                {matkulAbsensi?.jam_masuk && matkulAbsensi?.jam_keluar && (
-                                                    <Box mt={2} display="flex" flexDirection="column" gap={1}>
-                                                        <Button 
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            disabled
-                                                            startIcon={<CheckCircleOutlineOutlined sx={{ color: '#43a047' }} />}
-                                                            sx={{ 
-                                                                borderRadius: '12px',
-                                                                textTransform: 'none',
-                                                                padding: '8px',
-                                                                borderColor: '#e0e0e0',
-                                                                color: '#43a047',
-                                                                fontWeight: 'medium',
-                                                                '&.Mui-disabled': {
-                                                                    color: '#43a047',
-                                                                    borderColor: '#e0e0e0',
-                                                                }
-                                                            }}
-                                                        >
-                                                            Presensi Masuk: {formatTime(matkulAbsensi?.jam_masuk)}
-                                                        </Button>
-                                                        
-                                                        <Button 
-                                                            variant="outlined"
-                                                            fullWidth
-                                                            disabled
-                                                            startIcon={<CheckCircleOutlineOutlined sx={{ color: '#ff9800' }} />}
-                                                            sx={{ 
-                                                                borderRadius: '12px',
-                                                                textTransform: 'none',
-                                                                padding: '8px',
-                                                                borderColor: '#e0e0e0',
-                                                                color: '#ff9800',
-                                                                fontWeight: 'medium',
-                                                                '&.Mui-disabled': {
-                                                                    color: '#ff9800',
-                                                                    borderColor: '#e0e0e0',
-                                                                }
-                                                            }}
-                                                        >
-                                                            Presensi Keluar: {formatTime(matkulAbsensi?.jam_keluar)}
-                                                        </Button>
-                                                    </Box>
-                                                )}
-                                                
-                                                {/* Checkout button for ended classes */}
-                                                {matkulAbsensi?.jam_masuk && !matkulAbsensi?.jam_keluar && 
-                                                courseStatus.status === 'ended' && (
-                                                    <Button 
-                                                        variant="contained"
-                                                        fullWidth
-                                                        component={NavLink}
-                                                        to="/clockout"
-                                                        sx={{ 
-                                                            mt: 2,
-                                                            borderRadius: '12px',
-                                                            textTransform: 'none',
-                                                            padding: '10px',
-                                                            background: 'linear-gradient(90deg, #ff9800 0%, #ff7043 100%)',
-                                                            fontWeight: 'bold',
-                                                            boxShadow: '0 4px 10px rgba(255, 152, 0, 0.3)',
-                                                        }}
-                                                    >
-                                                        Presensi Keluar
-                                                    </Button>
-                                                )}
-                                            </Paper>
-                                        </Grid>
-                                    );
-                                })}
+                              {matkulHariIni.map((matkul, index) => {
+    const courseStatus = getCourseStatus(matkul);
+    const matkulAbsensi = getAbsensiForMatkul(matkul.id);
+    
+    return (
+        <Grid item xs={12} key={index}>
+            <Paper sx={{ 
+                p: 2, 
+                borderRadius: '16px',
+                border: '1px solid #f0f0f0',
+                boxShadow: '0 3px 10px rgba(0,0,0,0.05)',
+            }}>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                            {matkul.nama_matkul}
+                        </Typography>
+                        <Box display="flex" alignItems="center" mt={0.5}>
+                            <AccessTimeOutlined fontSize="small" sx={{ mr: 0.5, fontSize: 14, color: '#757575' }} />
+                            <Typography variant="caption" color="text.secondary">
+                                {formatTime(matkul.jam_masuk_presensi)} - {formatTime(matkul.jam_keluar_presensi)}
+                            </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" mt={0.5}>
+                            <PersonOutlineOutlined fontSize="small" sx={{ mr: 0.5, fontSize: 14, color: '#757575' }} />
+                            <Typography variant="caption" color="text.secondary">
+                                {matkul.User?.name || 'Dosen'}
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Chip 
+                            label={courseStatus.text} 
+                            size="small"
+                            sx={{
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                backgroundColor: 
+                                    courseStatus.status === 'open' ? '#e3f8ea' : 
+                                    courseStatus.status === 'ongoing' ? '#e3f2fd' :
+                                    courseStatus.status === 'in-progress' ? '#e3f2fd' :
+                                    courseStatus.status === 'need-checkout' ? '#fff3e0' :
+                                    courseStatus.status === 'completed' ? '#e8f5e9' : '#f5f5f5',
+                                color: 
+                                    courseStatus.status === 'open' ? '#43a047' :
+                                    courseStatus.status === 'ongoing' ? '#1976d2' :
+                                    courseStatus.status === 'in-progress' ? '#1976d2' :
+                                    courseStatus.status === 'need-checkout' ? '#ff9800' :
+                                    courseStatus.status === 'completed' ? '#2e7d32' : '#757575',
+                            }}
+                        />
+                    </Box>
+                </Box>
+                
+                {/* Area untuk button - dibersihkan dan diorganisir */}
+                <Box mt={2}>
+                    {/* Button untuk presensi masuk - hanya muncul jika status open */}
+                    {courseStatus.status === 'open' && (
+                        <Button 
+                            variant="contained"
+                            fullWidth
+                            onClick={() => {
+                                navigate(`/createAbsen?matkulId=${matkul.id}&matkulName=${encodeURIComponent(matkul.nama_matkul)}`);
+                            }}
+                            sx={{ 
+                                borderRadius: '12px',
+                                textTransform: 'none',
+                                padding: '10px',
+                                background: 'linear-gradient(90deg, #1976d2 0%, #2196f3 100%)',
+                                fontWeight: 'bold',
+                                boxShadow: '0 4px 10px rgba(33, 150, 243, 0.3)',
+                            }}
+                        >
+                            Presensi Masuk
+                        </Button>
+                    )}
+                    
+                    {/* Status presensi jika sudah presensi masuk */}
+                    {matkulAbsensi?.jam_masuk && (
+                        <Box>
+                            <Button 
+                                variant="outlined"
+                                fullWidth
+                                disabled
+                                startIcon={<CheckCircleOutlineOutlined />}
+                                sx={{ 
+                                    borderRadius: '12px',
+                                    textTransform: 'none',
+                                    padding: '10px',
+                                    borderColor: '#e0e0e0',
+                                    color: '#43a047',
+                                    fontWeight: 'medium',
+                                    mb: 1, // margin bottom untuk jarak dengan button berikutnya
+                                    '&.Mui-disabled': {
+                                        color: '#43a047',
+                                        borderColor: '#e0e0e0',
+                                    }
+                                }}
+                            >
+                                Presensi Masuk: {formatTime(matkulAbsensi?.jam_masuk) || (matkulAbsensi?.status)} 
+                            </Button>
+                            
+                            {/* Button untuk presensi keluar - hanya muncul jika belum presensi keluar */}
+                            {!matkulAbsensi?.jam_keluar && (
+                                <Button 
+                                    variant="contained"
+                                    fullWidth
+                                    onClick={() => {
+                                        navigate(`/clockout?matkulId=${matkul.id}&matkulName=${encodeURIComponent(matkul.nama_matkul)}`);
+                                    }}
+                                    sx={{ 
+                                        borderRadius: '12px',
+                                        textTransform: 'none',
+                                        padding: '10px',
+                                        background: 'linear-gradient(90deg, #ff9800 0%, #ff7043 100%)',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 4px 10px rgba(255, 152, 0, 0.3)',
+                                    }}
+                                >
+                                    Presensi Keluar
+                                </Button>
+                            )}
+                            
+                            {/* Status presensi keluar jika sudah presensi keluar */}
+                            {matkulAbsensi?.jam_keluar && (
+                                <Button 
+                                    variant="outlined"
+                                    fullWidth
+                                    disabled
+                                    startIcon={<CheckCircleOutlineOutlined />}
+                                    sx={{ 
+                                        borderRadius: '12px',
+                                        textTransform: 'none',
+                                        padding: '10px',
+                                        borderColor: '#e0e0e0',
+                                        color: '#43a047',
+                                        fontWeight: 'medium',
+                                        '&.Mui-disabled': {
+                                            color: '#43a047',
+                                            borderColor: '#e0e0e0',
+                                        }
+                                    }}
+                                >
+                                    Presensi Keluar: {formatTime(matkulAbsensi?.jam_keluar)}
+                                </Button>
+                            )}
+                        </Box>
+                    )}
+                    
+                    {/* Status untuk kelas yang sudah selesai tapi belum ada presensi */}
+                    {!matkulAbsensi?.jam_masuk && courseStatus.status === 'ended' && (
+                        <Button 
+                            variant="outlined"
+                            fullWidth
+                            disabled
+                            sx={{ 
+                                borderRadius: '12px',
+                                textTransform: 'none',
+                                padding: '10px',
+                                borderColor: '#e0e0e0',
+                                color: '#757575',
+                                fontWeight: 'medium',
+                                '&.Mui-disabled': {
+                                    color: '#757575',
+                                    borderColor: '#e0e0e0',
+                                }
+                            }}
+                        >
+                            Kelas Telah Berakhir Anda:{matkulAbsensi?.status || 'N/A'}
+                        </Button>
+                    )}
+                </Box>
+            </Paper>
+        </Grid>
+    );
+})}
                             </Grid>
                         )}
                     </AnimatedBox>

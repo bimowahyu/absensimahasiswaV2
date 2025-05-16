@@ -241,7 +241,7 @@ const DataAbsenHarian = () => {
         <SearchField
           fullWidth
           variant="outlined"
-          placeholder="Cari berdasarkan cabang..."
+          placeholder="Cari berdasarkan lokasi..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           InputProps={{

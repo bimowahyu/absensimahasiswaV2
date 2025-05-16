@@ -25,6 +25,8 @@ import {
   Avatar,
   CircularProgress
 } from '@mui/material';
+import { useLocation, useSearchParams } from 'react-router-dom';
+
 
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
@@ -33,9 +35,23 @@ const getApiBaseUrl = () => {
 };
 
 const CreateAbsen = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  
+   const [searchParams] = useSearchParams();
+    const matkulId = searchParams.get('matkulId');
+    const matkulName = searchParams.get('matkulName');
+    
+    // Cara 2: Menggunakan location state (backup)
+    const location = useLocation();
+    const { state } = location;
+    const fallbackMatkulId = state?.matkulId;
+    const fallbackMatkulName = state?.matkulName;
+    const navigate = useNavigate();
+    // Gunakan query params dulu, fallback ke state
+    const finalMatkulId = matkulId || fallbackMatkulId;
+    const finalMatkulName = matkulName || fallbackMatkulName;
+    
+    console.log('matkulId dari query params:', matkulId);
+    console.log('matkulId dari state:', fallbackMatkulId);
+    console.log('Final matkulId:', finalMatkulId);
   // State Variables
   const [radius, setRadius] = useState(null);
   const [imageSrc, setImageSrc] = useState('');
@@ -98,8 +114,8 @@ const CreateAbsen = () => {
       try {
         const response = await axios.get(`${getApiBaseUrl()}/Memahasiswa`, { withCredentials: true });
         setProfileImage(response.data.url);
-        if (response.data.Cabang && response.data.Cabang.nama_cabang) {
-          setNamaCabang(response.data.Cabang.nama_cabang);
+        if (response.data.Cabang && response.data.Cabang.nama) {
+          setNamaCabang(response.data.Cabang.nama);
         } else {
           const branchResponse = await axios.get(`${getApiBaseUrl()}/cabang`, { withCredentials: true });
           setNamaCabang(branchResponse.data.name || '');
@@ -286,10 +302,31 @@ const CreateAbsen = () => {
       });
     }
   };
-
+useEffect(() => {
+        if (!finalMatkulId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Data mata kuliah tidak ditemukan',
+                showConfirmButton: true,
+                confirmButtonText: 'Kembali'
+            }).then(() => {
+                navigate('/Dashboard');
+            });
+        }
+    }, [finalMatkulId, navigate]);
   // Create Absensi
-  const createAbsensi = async () => {
-    try {
+   const createAbsensi = async () => {
+        try {
+            console.log('Sending matkulId:', finalMatkulId);
+            if (!finalMatkulId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Data mata kuliah tidak valid',
+                });
+                return;
+            }
       // Validasi
       if (!imageSrc) {
         Swal.fire({
@@ -316,6 +353,7 @@ const CreateAbsen = () => {
         latitude,
         longitude,
         image: imageSrc,
+        matkulId: finalMatkulId
       }, {
         withCredentials: true,
         headers: {
@@ -383,6 +421,7 @@ const CreateAbsen = () => {
         bgcolor: '#121212',
         width: '100%'
       }}>
+        
         {/* Camera/Photo View - Responsive Height */}
         <Box sx={{ 
           position: 'relative', 
@@ -436,7 +475,10 @@ const CreateAbsen = () => {
               {/* Branch Name */}
               <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                 <IoBusinessOutline size={16} />
-                <span>{namaCabang || 'Loading...'}</span>
+                {/* <span>{namaCabang || 'Loading...'}</span> */}
+                 <Typography variant="subtitle1">
+              Presensi Masuk: {finalMatkulName}
+            </Typography>
               </Typography>
               
               <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

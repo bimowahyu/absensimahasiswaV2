@@ -36,9 +36,9 @@ useEffect(() => {
   const getCabangById = async () =>{
     try {
         const response = await axios.get(`${getApiBaseUrl()}/cabang/${id}`,{withCredentials:true});
-        setKodeCabang(response.data.kode_cabang);
-        setNamaCabang(response.data.nama_cabang);
-        const locationArray = response.data.lokasi_kantor.split(',');
+        setKodeCabang(response.data.kode);
+        setNamaCabang(response.data.nama);
+        const locationArray = response.data.lokasi.split(',');
         setLatitude(locationArray[0]);
         setLongitude(locationArray[1]);
         setRadius(response.data.radius);
@@ -56,9 +56,9 @@ const updateCabang = async (e)=> {
     e.preventDefault();
     try {
         const response = await axios.put(`${getApiBaseUrl()}/cabang/${id}`,{
-            nama_cabang:namaCabang,
-            kode_cabang:kodeCabang,
-            lokasi_kantor:`${latitude},${longitude}`,
+            nama:namaCabang,
+            kode:kodeCabang,
+            lokasi:`${latitude},${longitude}`,
             radius:radius
         },{withCredentials:true});
         console.log(response.data)
