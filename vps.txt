@@ -1,7 +1,1 @@
-ssh -p 34798 root@141.11.190.114
-@Bsens1wajah
-
-pm2 start npm --name "frontend" -- start
-
-
-cd /var/www
+.
